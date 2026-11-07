@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Tablet Beautify
 // @namespace    http://tampermonkey.net/
-// @version      3.18
+// @version      3.19
 // @description  调整页面布局，让知乎和贴吧更适合平板竖屏
 // @match        *://www.zhihu.com/*
 // @match        *://tieba.baidu.com/*
@@ -356,6 +356,18 @@
             }
 
             /*
+             * 贴吧吧页禁止横向滚动。
+             * .frs-page-wrap 是吧页的页面滚动容器，保留纵向滚动。
+             */
+            .frs-page-wrap {
+                overflow-x: hidden !important;
+            }
+
+            .frs-page-wrap .frs-container {
+                overflow-x: hidden !important;
+            }
+
+            /*
              * 贴吧吧页全宽布局。
              *
              * .frs-container 默认 max-width:1059px 且左右各有 60px padding，
@@ -399,6 +411,22 @@
             .frs-page-wrap .frs-container .frs-main-container .left-container {
                 min-width: 0 !important;
                 max-width: none !important;
+                box-sizing: border-box !important;
+            }
+
+            /*
+             * 帖子详情页禁止横向滚动。
+             * .pc-pb-box 是实际发生 11px 内部溢出的滚动容器；
+             * 只关闭横向溢出，保留原有纵向滚动。
+             */
+            .pc-pb-box {
+                overflow-x: hidden !important;
+            }
+
+            /* 正文左右留出与主页相近的呼吸空间，避免文字和图片贴边。 */
+            .pc-pb-box .center-content {
+                padding-left: 12px !important;
+                padding-right: 12px !important;
                 box-sizing: border-box !important;
             }
 

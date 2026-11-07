@@ -11,7 +11,7 @@ tieba.baidu.com##.thread-action-area
 ! ===== 帖子详情页 =====
 
 ! 帖子作者头像及用户信息栏
-tieba.baidu.com##.head-line
+! tieba.baidu.com##.head-line
 
 ! 一楼操作栏（点赞、分享及其他操作）
 tieba.baidu.com##.pc-pb-first-floor-interactive
@@ -250,12 +250,16 @@ x.com##article .r-kzbkwu > :last-child
 ! 抖音
 ! ============================================================
 
+! 以下是评论区从上到下的元素
+
+! 评论的发布时间和发布地区
+www.douyin.com##.VAQA49VP
+
 ! 评论区评论的操作栏
 www.douyin.com##.Ctt1baq8
 
-! 评论上方显示发布时间和发布地区的信息
-www.douyin.com##.VAQA49VP
-
+! 评论区的输入框
+douyin.com##.comment-input-container
 
 ! ============================================================
 ! 以下选择器用途尚未确认，暂不启用

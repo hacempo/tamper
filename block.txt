@@ -2,51 +2,67 @@
 ! 百度贴吧
 ! ============================================================
 
-! 贴吧右侧导航栏
-tieba.baidu.com##.right-nav-bar
+! ===== 首页 =====
 
 ! 首页帖子操作栏（点赞、分享及其他操作）
 tieba.baidu.com##.thread-action-area
 
-! 帖子详情页头像栏
+
+! ===== 帖子详情页 =====
+
+! 帖子作者头像及用户信息栏
 tieba.baidu.com##.head-line
 
-! 帖子详情页一楼操作栏（点赞、分享及其他操作）
+! 一楼操作栏（点赞、分享及其他操作）
 tieba.baidu.com##.pc-pb-first-floor-interactive
 
-! 帖子详情页评论/楼层操作区域（点赞、分享及其他操作）
+! 楼层评论/操作信息区域（点赞、分享及其他操作）
 tieba.baidu.com##.pc-pb-comments-desc
 
-! 帖子详情页回复输入栏
+! 回复输入栏
 tieba.baidu.com##.pc-pb-reply-box
+
+
+! ===== 全站侧栏 =====
+
+! 贴吧右侧导航栏
+tieba.baidu.com##.right-nav-bar
 
 
 ! ============================================================
 ! 115 网盘
 ! ============================================================
 
-! 底部通知栏
+! ===== 烦人：弹窗与浮动元素 =====
+
+! 页面底部左侧通知弹窗
 115.com###js_bottom_notification
 
-! 浮动功能区（用途未进一步确认）
+! 页面底部右侧浮动弹窗/功能浮层
 115.com##.feature-float
 
-! 左侧容器/侧栏（用途未进一步确认）
+
+! ===== 无用：侧栏与导航入口 =====
+
+! 页面左侧栏
 115.com##.container-leftside
 
-! 相册入口
-115.com##[href="//album.115.com"]
+! 顶栏备份/照片入口（使用 data-nav 属性，比链接地址更稳定）
+115.com##[data-nav="photo"]
 
-! 证件/凭证入口
-115.com##[href="//credentials.115.com/#/"]
+! 顶栏密档入口
+115.com##[data-nav="credentials"]
 
-! 笔记模式入口
-115.com##[href="//115.com/?mode=note"]
+! 顶栏记事入口
+115.com##[data-nav="note"]
 
-! 顶部功能区（用途未进一步确认）
+
+! ===== 烦人：顶部广告与提示 =====
+
+! 顶栏中间的广告/推广区域
 115.com##.ceiling-feature
 
-! 顶部临时链接区域（用途未进一步确认）
+! 顶栏提示信息
 115.com##.ceiling-link-temp
 
 
@@ -54,7 +70,7 @@ tieba.baidu.com##.pc-pb-reply-box
 ! 115 视频
 ! ============================================================
 
-! 浮动功能区（用途未进一步确认）
+! 页面底部右侧浮动弹窗/功能浮层
 115vod.com##.feature-float
 
 
@@ -62,19 +78,25 @@ tieba.baidu.com##.pc-pb-reply-box
 ! NGA 玩家社区
 ! ============================================================
 
-! 主题列表 c3 列（具体字段未确认）
+! ===== 主页主题列表 =====
+
+! 主题列表中的发帖人及发帖时间列
 ngabbs.com##.topicrow .c3
 
-! 主题列表 c4 列（具体字段未确认）
+! 主题列表中的最后回帖人及回帖时间列
 ngabbs.com##.topicrow .c4
 
-! 帖子列表 c1 列（具体字段未确认）
-ngabbs.com##.postrow .c1
+! ===== 主页与帖子详情页 =====
 
-! 顶部话题区域（用途未进一步确认）
+! 通用 c1 信息列：主页的发帖/回帖人数；详情页的楼层用户信息
+ngabbs.com##.c1
+
+! ===== 顶部版头及发帖区域 =====
+
+! 顶部版头及相关信息模块容器（包含版头、版规、子版入口等内容）
 ngabbs.com###toptopics
 
-! 快速发帖区域
+! 主页和帖子详情页的快速发帖区域
 ngabbs.com###fast_post_c
 
 
@@ -82,11 +104,25 @@ ngabbs.com###fast_post_c
 ! 123 云盘
 ! ============================================================
 
-! 通知区域（用途未进一步确认）
+! ===== 烦人：广告与公告 =====
+
+! 页面底部右侧公告
 yun.123pan.cn##.notice-box
 
-! 页面元素 entry_p0tlq（用途未进一步确认）
+! 页面底部右侧广告（通常位于公告上方）
 yun.123pan.cn##.entry_p0tlq
+
+
+! ===== 无用：顶部与侧栏 =====
+
+! 页面顶部整体区域
+yun.123pan.cn##.mfy-main-layout__head
+
+! 页面左侧 aside 栏
+yun.123pan.cn##aside
+
+! 主界面内部的左侧菜单栏
+yun.123pan.cn##.withSideMenuLayoutSider_ELJ6a
 
 
 ! ============================================================
@@ -95,14 +131,14 @@ yun.123pan.cn##.entry_p0tlq
 
 ! ===== 侧栏 =====
 
-! 知乎页面侧边栏模块
+! 首页及详情页通用侧栏
 www.zhihu.com##.css-bkewaf
 
-! 问题详情页右侧栏
+! 详情页问题标题区域右侧栏，也用于浮动顶栏中的右侧区域
 www.zhihu.com##.QuestionHeader-side
 
 
-! ===== 顶部导航 =====
+! ===== 顶部导航（按从左到右的顺序） =====
 
 ! 专栏广场入口
 www.zhihu.com##[href="https://www.zhihu.com/column-square"]
@@ -110,55 +146,58 @@ www.zhihu.com##[href="https://www.zhihu.com/column-square"]
 ! 圈子入口
 www.zhihu.com##[href="https://www.zhihu.com/ring-feeds"]
 
-! 顶栏无用元素
+! 顶栏入口之间的分隔符
 www.zhihu.com##.css-53paqb
 
-! 项目广场入口
+! 项目广场 / AI Works 入口
 www.zhihu.com##[href="https://www.zhihu.com/project-square"]
 
-! 会员入口
+! 会员故事入口
 www.zhihu.com##[href="https://www.zhihu.com/fiore/h5/vip-web"]
 
-! 知学堂入口
+! AI 直答入口
 www.zhihu.com##[href="https://zhida.zhihu.com/"]
 
-! 搜索栏提问入口
+! 用户发布入口
 www.zhihu.com##.SearchBar-askContainer
 
-! 顶栏无用元素
+! 消息和私信入口
 www.zhihu.com##.css-1vbrp2j
+
+! 顶栏最右侧头像/用户入口
+www.zhihu.com##.css-ruapjk
 
 
 ! ===== 问题和回答页面 =====
 
-! 问题标题区域底部模块
+! 问题标题区域底部操作模块（关注问题、写回答等）
 www.zhihu.com##.QuestionHeader-footer
 
-! 关注按钮
+! 浮动顶栏问题区域中，面向答主显示的关注按钮
 www.zhihu.com##.FollowButton
 
-! 赞赏按钮
+! 回答区域中的赞赏按钮
 www.zhihu.com##.Reward
 
-! 回答操作栏第一个按钮
+! 回答操作栏第一个按钮（赞同/反对）
 www.zhihu.com##.ContentItem-actions > :first-child
 
-! 喜欢按钮
+! 回答操作栏的喜欢按钮
 www.zhihu.com##[aria-label="喜欢"]
 
-! 解释内容按钮
+! 回答操作栏的解释内容按钮
 www.zhihu.com##[data-tooltip="解释这篇内容"]
 
 
 ! ===== 其他页面元素 =====
 
-! 写回答区域
+! 首页写回答区域
 www.zhihu.com##.WriteArea
 
-! 角落悬浮按钮组
+! 首页和详情页角落悬浮按钮组（AI 助手）
 www.zhihu.com##.CornerButtonsGroup
 
-! 页面元素 css-jghqwm（具体用途未确认）
+! 页面元素 css-jghqwm（用途尚未确认）
 www.zhihu.com##.css-jghqwm
 
 
@@ -166,5 +205,5 @@ www.zhihu.com##.css-jghqwm
 ! 哔哩哔哩
 ! ============================================================
 
-! 视频资源列表
+! 视频资源列表（用途尚未确认）
 www.bilibili.com##.video-resource-list

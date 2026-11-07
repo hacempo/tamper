@@ -36,6 +36,8 @@ tieba.baidu.com##.pc-pb-reply-box
 ! 贴吧右侧导航栏
 tieba.baidu.com##.right-nav-bar
 
+! 贴吧页右栏
+tieba.baidu.com##.frs-right-sidebar
 
 ! ============================================================
 ! 115 网盘

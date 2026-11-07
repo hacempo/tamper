@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Tablet Beautify
 // @namespace    http://tampermonkey.net/
-// @version      3.17
+// @version      3.18
 // @description  调整页面布局，让知乎和贴吧更适合平板竖屏
 // @match        *://www.zhihu.com/*
 // @match        *://tieba.baidu.com/*
@@ -352,6 +352,53 @@
                 padding-left: 0 !important;
                 padding-right: 0 !important;
 
+                box-sizing: border-box !important;
+            }
+
+            /*
+             * 贴吧吧页全宽布局。
+             *
+             * .frs-container 默认 max-width:1059px 且左右各有 60px padding，
+             * 导致整个吧页内容被限制在中间。这里解除宽度和内边距限制，
+             * 并让顶部头图区、下方主内容区同步铺满。
+             */
+
+            .frs-page-wrap .frs-container.frs-page-container {
+                width: 100% !important;
+                max-width: none !important;
+                min-width: 0 !important;
+
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+
+                box-sizing: border-box !important;
+            }
+
+            .frs-page-wrap .frs-container .head-pic-area {
+                width: 100% !important;
+                max-width: none !important;
+                min-width: 0 !important;
+                box-sizing: border-box !important;
+            }
+
+            .frs-page-wrap .frs-container .frs-main-container {
+                width: 100% !important;
+                max-width: none !important;
+                min-width: 0 !important;
+                box-sizing: border-box !important;
+            }
+
+            /* 隐藏吧页右侧栏，让左侧帖子列表自然占满下方区域。 */
+            .frs-page-wrap .frs-container .frs-main-container .frs-right-sidebar {
+                display: none !important;
+            }
+
+            .frs-page-wrap .frs-container .frs-main-container .left-container {
+                min-width: 0 !important;
+                max-width: none !important;
                 box-sizing: border-box !important;
             }
 

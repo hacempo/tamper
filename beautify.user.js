@@ -309,6 +309,32 @@
             }
 
             /*
+             * 贴吧主页：回收折叠左侧导航占用的布局空间。
+             *
+             * left-content 虽然通过 left:-244px 移出视口，
+             * 仍保留约 261px 的 flex 布局占位；原 main-content
+             * 又使用 calc(100% - 50px)，因此主页从 x=50 开始。
+             *
+             * 仅当 content-container 内是主页时启用，详情页不受影响。
+             */
+            .pc-main-page-layout .content-container:has(> .main-content > .home-page-wrapper) {
+                justify-content: flex-start !important;
+            }
+
+            .pc-main-page-layout .content-container:has(> .main-content > .home-page-wrapper) > .left-content.is-collapsed {
+                flex: 0 0 261px !important;
+                width: 261px !important;
+                box-sizing: border-box !important;
+            }
+
+            .pc-main-page-layout .content-container:has(> .main-content > .home-page-wrapper) > .main-content.is-expanded {
+                flex: 0 0 100% !important;
+                width: 100% !important;
+                margin-left: -261px !important;
+                box-sizing: border-box !important;
+            }
+
+            /*
              * 帖子详情页外层容器。
              *
              * Tieba 默认 .container 有 1060px 的最大宽度，

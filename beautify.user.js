@@ -284,10 +284,28 @@
                百度贴吧
                ========================= */
 
-            /* 首页主体 */
+            /*
+             * 首页内容容器。
+             * 默认左右各有 60px 内边距，会让中心栏无法利用完整主区域。
+             */
+            .home-page-wrapper > .container {
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+                box-sizing: border-box !important;
+            }
+
+            /* 首页主体：占满可用宽度，并保留右侧栏出现时的 flex 空间分配。 */
             .home-page-wrapper .center-content {
                 width: 100% !important;
                 max-width: none !important;
+                min-width: 0 !important;
+
+                flex: 1 1 0% !important;
+
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+
+                box-sizing: border-box !important;
             }
 
             /*

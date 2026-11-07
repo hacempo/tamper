@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Tablet Beautify
 // @namespace    http://tampermonkey.net/
-// @version      3.15
+// @version      3.16
 // @description  隐藏侧边栏与无用元素，让知乎和贴吧更适合平板竖屏
 // @match        *://www.zhihu.com/*
 // @match        *://tieba.baidu.com/*
@@ -344,10 +344,42 @@
                 max-width: none !important;
             }
 
-            /* 帖子详情页主体 */
+            /*
+             * 帖子详情页外层容器。
+             *
+             * Tieba 默认 .container 有 1060px 的最大宽度，
+             * 并带有左右自动外边距及额外内边距。
+             * 这些限制会让 center-content 无法随外层主区域展开。
+             */
+            .pc-pb-box .container {
+                width: 100% !important;
+                max-width: none !important;
+                min-width: 0 !important;
+
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+
+                box-sizing: border-box !important;
+            }
+
+            /*
+             * 帖子详情页正文主栏。
+             * 移除原有 47px 右边距，填满 .container 的可用宽度。
+             */
             .pc-pb-box .center-content {
                 width: 100% !important;
                 max-width: none !important;
+                min-width: 0 !important;
+
+                flex: 1 1 0% !important;
+
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+
+                box-sizing: border-box !important;
             }
         `;
     }

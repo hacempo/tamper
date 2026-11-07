@@ -1,4 +1,99 @@
-! ===== 知乎侧栏 =====
+! ============================================================
+! 百度贴吧
+! ============================================================
+
+! 贴吧右侧导航栏
+tieba.baidu.com##.right-nav-bar
+
+! 首页帖子操作栏（点赞、分享及其他操作）
+tieba.baidu.com##.thread-action-area
+
+! 帖子详情页头像栏
+tieba.baidu.com##.head-line
+
+! 帖子详情页一楼操作栏（点赞、分享及其他操作）
+tieba.baidu.com##.pc-pb-first-floor-interactive
+
+! 帖子详情页评论/楼层操作区域（点赞、分享及其他操作）
+tieba.baidu.com##.pc-pb-comments-desc
+
+! 帖子详情页回复输入栏
+tieba.baidu.com##.pc-pb-reply-box
+
+
+! ============================================================
+! 115 网盘
+! ============================================================
+
+! 底部通知栏
+115.com###js_bottom_notification
+
+! 浮动功能区（用途未进一步确认）
+115.com##.feature-float
+
+! 左侧容器/侧栏（用途未进一步确认）
+115.com##.container-leftside
+
+! 相册入口
+115.com##[href="//album.115.com"]
+
+! 证件/凭证入口
+115.com##[href="//credentials.115.com/#/"]
+
+! 笔记模式入口
+115.com##[href="//115.com/?mode=note"]
+
+! 顶部功能区（用途未进一步确认）
+115.com##.ceiling-feature
+
+! 顶部临时链接区域（用途未进一步确认）
+115.com##.ceiling-link-temp
+
+
+! ============================================================
+! 115 视频
+! ============================================================
+
+! 浮动功能区（用途未进一步确认）
+115vod.com##.feature-float
+
+
+! ============================================================
+! NGA 玩家社区
+! ============================================================
+
+! 主题列表 c3 列（具体字段未确认）
+ngabbs.com##.topicrow .c3
+
+! 主题列表 c4 列（具体字段未确认）
+ngabbs.com##.topicrow .c4
+
+! 帖子列表 c1 列（具体字段未确认）
+ngabbs.com##.postrow .c1
+
+! 顶部话题区域（用途未进一步确认）
+ngabbs.com###toptopics
+
+! 快速发帖区域
+ngabbs.com###fast_post_c
+
+
+! ============================================================
+! 123 云盘
+! ============================================================
+
+! 通知区域（用途未进一步确认）
+yun.123pan.cn##.notice-box
+
+! 页面元素 entry_p0tlq（用途未进一步确认）
+yun.123pan.cn##.entry_p0tlq
+
+
+! ============================================================
+! 知乎
+! ============================================================
+
+! ===== 侧栏 =====
 
 ! 知乎页面侧边栏模块
 www.zhihu.com##.css-bkewaf
@@ -7,7 +102,7 @@ www.zhihu.com##.css-bkewaf
 www.zhihu.com##.QuestionHeader-side
 
 
-! ===== 知乎顶部导航 =====
+! ===== 顶部导航 =====
 
 ! 专栏广场入口
 www.zhihu.com##[href="https://www.zhihu.com/column-square"]
@@ -34,7 +129,7 @@ www.zhihu.com##.SearchBar-askContainer
 www.zhihu.com##.css-1vbrp2j
 
 
-! ===== 知乎问题和回答页面 =====
+! ===== 问题和回答页面 =====
 
 ! 问题标题区域底部模块
 www.zhihu.com##.QuestionHeader-footer
@@ -55,7 +150,7 @@ www.zhihu.com##[aria-label="喜欢"]
 www.zhihu.com##[data-tooltip="解释这篇内容"]
 
 
-! ===== 知乎其他元素 =====
+! ===== 其他页面元素 =====
 
 ! 写回答区域
 www.zhihu.com##.WriteArea
@@ -63,8 +158,13 @@ www.zhihu.com##.WriteArea
 ! 角落悬浮按钮组
 www.zhihu.com##.CornerButtonsGroup
 
+! 页面元素 css-jghqwm（具体用途未确认）
+www.zhihu.com##.css-jghqwm
 
-! ===== 百度贴吧 =====
 
-! 贴吧右侧导航栏
-tieba.baidu.com##.right-nav-bar
+! ============================================================
+! 哔哩哔哩
+! ============================================================
+
+! 视频资源列表
+www.bilibili.com##.video-resource-list

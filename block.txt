@@ -227,6 +227,11 @@ www.bilibili.com##.feed-card:not(:has(.enable-no-interest))
 ! 页面滚动后新加载的 Feed 卡片：只隐藏不含“不感兴趣”标记的卡片
 www.bilibili.com##.bili-feed-card:not(:has(.enable-no-interest))
 
+! bilibili 视频页下的推广广告
+www.bilibili.com##.video-resource-list
+
+! bilibili 视频页右侧视频推荐中的广告
+www.bilibili.com##.video-page-special-card-small
 
 ! ============================================================
 ! X
@@ -235,7 +240,7 @@ www.bilibili.com##.bili-feed-card:not(:has(.enable-no-interest))
 ! ===== 首页 =====
 
 ! 首页时间线顶部的发帖栏
-x.com##[aria-label="主页时间线"] > :nth-child(3)
+x.com##[aria-label="主页时间线"] > .css-g5y9jx.r-kemksi.r-184en5c
 
 ! 每条帖子的操作栏
 x.com##article .r-kzbkwu > :last-child
@@ -256,9 +261,6 @@ www.douyin.com##.VAQA49VP
 ! 以下选择器用途尚未确认，暂不启用
 ! 只保留记录；下面的规则均已注释，不会被过滤器执行
 ! ============================================================
-
-! Bilibili：视频资源列表，桌面端可能本来就不显示，尚未确认是否需要屏蔽
-! www.bilibili.com##.video-resource-list
 
 ! 知乎：css-140jo2，元素用途及影响范围未确认
 ! www.zhihu.com##.css-140jo2

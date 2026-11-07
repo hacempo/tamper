@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Tablet Beautify
 // @namespace    http://tampermonkey.net/
-// @version      3.16
-// @description  隐藏侧边栏与无用元素，让知乎和贴吧更适合平板竖屏
+// @version      3.17
+// @description  调整页面布局，让知乎和贴吧更适合平板竖屏
 // @match        *://www.zhihu.com/*
 // @match        *://tieba.baidu.com/*
 // @run-at       document-start
@@ -21,14 +21,6 @@
             /* =========================
                知乎
                ========================= */
-
-            /* ---------- 侧栏 ---------- */
-
-            .css-bkewaf,
-            .QuestionHeader-side {
-                display: none !important;
-            }
-
 
             /* ---------- 问题页主栏 ---------- */
 
@@ -124,19 +116,6 @@
 
 
             /* ---------- 顶栏 ---------- */
-
-            /* 隐藏不需要的项目 */
-            [href="https://www.zhihu.com/column-square"],
-            [href="https://www.zhihu.com/ring-feeds"],
-            .css-53paqb,
-            [href="https://www.zhihu.com/project-square"],
-            [href="https://www.zhihu.com/fiore/h5/vip-web"],
-            [href="https://zhida.zhihu.com/"],
-            .SearchBar-askContainer,
-            .css-1vbrp2j {
-                display: none !important;
-            }
-
 
             /*
              * 顶栏 fixed 父容器。
@@ -280,26 +259,7 @@
                 padding-right: 0 !important;
             }
 
-            .QuestionHeader-footer {
-                display: none !important;
-            }
-
-
             /* ---------- 回答操作栏 ---------- */
-
-            .FollowButton {
-                display: none !important;
-            }
-
-            .Reward {
-                display: none !important;
-            }
-
-            .ContentItem-actions > :first-child,
-            [aria-label="喜欢"],
-            [data-tooltip="解释这篇内容"] {
-                display: none !important;
-            }
 
             .ContentItem-actions > :nth-child(2) {
                 margin-left: 0 !important;
@@ -315,15 +275,6 @@
             }
 
 
-            /* ---------- 其它元素 ---------- */
-
-            .WriteArea {
-                display: none !important;
-            }
-
-            .CornerButtonsGroup {
-                display: none !important;
-            }
         `;
 
     } else if (location.hostname.includes('tieba.baidu.com')) {
@@ -332,11 +283,6 @@
             /* =========================
                百度贴吧
                ========================= */
-
-            /* 隐藏右侧栏 */
-            .right-nav-bar {
-                display: none !important;
-            }
 
             /* 首页主体 */
             .home-page-wrapper .center-content {

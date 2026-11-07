@@ -309,25 +309,25 @@
             }
 
             /*
-             * 贴吧主页：回收折叠左侧导航占用的布局空间。
+             * 主页和帖子详情页共用的主体布局修正。
              *
-             * left-content 虽然通过 left:-244px 移出视口，
-             * 仍保留约 261px 的 flex 布局占位；原 main-content
-             * 又使用 calc(100% - 50px)，因此主页从 x=50 开始。
-             *
-             * 仅当 content-container 内是主页时启用，详情页不受影响。
+             * 折叠侧栏仍参与 flex 排版，占据 261px；主体通过
+             * -261px 左外边距抵消占位，并以 100% 宽度铺满视口。
+             * 同时将侧栏完全移出视口，避免其 z-index 覆盖主体
+             * 左侧内容（原 left:-244px 会残留约 17px）。
              */
-            .pc-main-page-layout .content-container:has(> .main-content > .home-page-wrapper) {
+            .pc-main-page-layout .content-container:has(> .left-content.is-collapsed) {
                 justify-content: flex-start !important;
             }
 
-            .pc-main-page-layout .content-container:has(> .main-content > .home-page-wrapper) > .left-content.is-collapsed {
+            .pc-main-page-layout .content-container:has(> .left-content.is-collapsed) > .left-content.is-collapsed {
                 flex: 0 0 261px !important;
                 width: 261px !important;
+                left: -261px !important;
                 box-sizing: border-box !important;
             }
 
-            .pc-main-page-layout .content-container:has(> .main-content > .home-page-wrapper) > .main-content.is-expanded {
+            .pc-main-page-layout .content-container:has(> .left-content.is-collapsed) > .main-content.is-expanded {
                 flex: 0 0 100% !important;
                 width: 100% !important;
                 margin-left: -261px !important;

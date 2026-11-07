@@ -204,6 +204,14 @@ www.zhihu.com##[aria-label="喜欢"]
 ! 回答操作栏的解释内容按钮
 www.zhihu.com##[data-tooltip="解释这篇内容"]
 
+! 回答的关注按钮
+www.zhihu.com##.css-upmq18
+
+! 评论的输入框
+www.zhihu.com##.css-1fo89v5
+
+! 评论的操作栏
+www.zhihu.com##.css-140jo2
 
 ! ===== 首页及其他页面元素 =====
 
@@ -273,9 +281,6 @@ douyin.com##.comment-input-container
 ! 以下选择器用途尚未确认，暂不启用
 ! 只保留记录；下面的规则均已注释，不会被过滤器执行
 ! ============================================================
-
-! 知乎：css-140jo2，元素用途及影响范围未确认
-! www.zhihu.com##.css-140jo2
 
 ! 知乎：css-jghqwm，元素用途及影响范围未确认
 ! www.zhihu.com##.css-jghqwm

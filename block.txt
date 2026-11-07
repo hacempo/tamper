@@ -1,0 +1,70 @@
+! ===== 知乎侧栏 =====
+
+! 知乎页面侧边栏模块
+www.zhihu.com##.css-bkewaf
+
+! 问题详情页右侧栏
+www.zhihu.com##.QuestionHeader-side
+
+
+! ===== 知乎顶部导航 =====
+
+! 专栏广场入口
+www.zhihu.com##[href="https://www.zhihu.com/column-square"]
+
+! 圈子入口
+www.zhihu.com##[href="https://www.zhihu.com/ring-feeds"]
+
+! 顶栏无用元素
+www.zhihu.com##.css-53paqb
+
+! 项目广场入口
+www.zhihu.com##[href="https://www.zhihu.com/project-square"]
+
+! 会员入口
+www.zhihu.com##[href="https://www.zhihu.com/fiore/h5/vip-web"]
+
+! 知学堂入口
+www.zhihu.com##[href="https://zhida.zhihu.com/"]
+
+! 搜索栏提问入口
+www.zhihu.com##.SearchBar-askContainer
+
+! 顶栏无用元素
+www.zhihu.com##.css-1vbrp2j
+
+
+! ===== 知乎问题和回答页面 =====
+
+! 问题标题区域底部模块
+www.zhihu.com##.QuestionHeader-footer
+
+! 关注按钮
+www.zhihu.com##.FollowButton
+
+! 赞赏按钮
+www.zhihu.com##.Reward
+
+! 回答操作栏第一个按钮
+www.zhihu.com##.ContentItem-actions > :first-child
+
+! 喜欢按钮
+www.zhihu.com##[aria-label="喜欢"]
+
+! 解释内容按钮
+www.zhihu.com##[data-tooltip="解释这篇内容"]
+
+
+! ===== 知乎其他元素 =====
+
+! 写回答区域
+www.zhihu.com##.WriteArea
+
+! 角落悬浮按钮组
+www.zhihu.com##.CornerButtonsGroup
+
+
+! ===== 百度贴吧 =====
+
+! 贴吧右侧导航栏
+tieba.baidu.com##.right-nav-bar

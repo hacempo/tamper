@@ -258,7 +258,7 @@ www.bilibili.com##.video-page-special-card-small
 ! ===== 首页 =====
 
 ! 首页时间线顶部的发帖栏
-x.com##[aria-label="主页时间线"] > .css-g5y9jx.r-kemksi.r-184en5c
+x.com##[aria-label="主页时间线"] > .r-184en5c
 
 ! 每条帖子的操作栏
 x.com##article .r-kzbkwu > :last-child

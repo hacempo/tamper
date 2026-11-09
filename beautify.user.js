@@ -138,7 +138,7 @@
             domains: ['bilibili.com'],
             selectors: [
                 '.left-entry-main > :nth-child(n+4)',
-                '.right-entry__main > :not(:nth-child(4), :nth-child(5), :nth-child(6))'
+                '.right-entry__main > :not(:nth-child(n+4):nth-child(-n+6))'
             ]
         },
         {

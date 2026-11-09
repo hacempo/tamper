@@ -337,7 +337,7 @@
                     });
                 }
 
-                thread.style.setProperty('display', 'none', 'important');
+                setImportantStyle(thread, 'display', 'none');
                 return;
             }
 
@@ -357,16 +357,19 @@
             hiddenThreadOriginalDisplay.delete(thread);
         };
 
-        const hideShadowElement = (element) => {
+        const setImportantStyle = (element, property, value) => {
             if (!element) return;
 
-            // Avoid repeatedly mutating style when the element is already hidden.
             if (
-                element.style.getPropertyValue('display') !== 'none' ||
-                element.style.getPropertyPriority('display') !== 'important'
+                element.style.getPropertyValue(property) !== value ||
+                element.style.getPropertyPriority(property) !== 'important'
             ) {
-                element.style.setProperty('display', 'none', 'important');
+                element.style.setProperty(property, value, 'important');
             }
+        };
+
+        const hideShadowElement = (element) => {
+            setImportantStyle(element, 'display', 'none');
         };
 
         const applyRules = () => {
@@ -393,11 +396,7 @@
             // #contents 位于 bili-comments 的第一层 Shadow DOM。
             const contents = root.querySelector('#contents');
             if (contents) {
-                contents.style.setProperty(
-                    'padding-top',
-                    '0px',
-                    'important'
-                );
+                setImportantStyle(contents, 'padding-top', '0px');
             }
 
             // 只隐藏包含商品标记的整条评论线程。
@@ -433,11 +432,7 @@
 
                 const navbar = headerRoot.querySelector('#navbar');
                 if (navbar) {
-                    navbar.style.setProperty(
-                        'margin-bottom',
-                        '0px',
-                        'important'
-                    );
+                    setImportantStyle(navbar, 'margin-bottom', '0px');
                 }
 
                 // 评论区顶部输入框：#commentbox 位于 Header Shadow DOM。

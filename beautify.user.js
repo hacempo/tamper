@@ -261,15 +261,109 @@
             !GM_getValue('beautify:enabled:bilibili', true)
         ) return;
 
-        const beautifyEnabled = GM_getValue('beautify:enabled:bilibili', true);
-
         let commentsRoot = null;
-        let headerRoot = null;
         let commentsObserver = null;
-        let headerObserver = null;
+        let applyScheduled = false;
+
+        // 一个评论线程可能再嵌套 bili-comment-renderer 等多个 Shadow DOM。
+        // 每个已发现的开放 ShadowRoot 都单独监听，避免漏掉内部异步加载的商品标记。
+        const nestedRootObservers = new Map();
+        const hiddenThreadOriginalDisplay = new WeakMap();
+
+        const scheduleApply = () => {
+            if (applyScheduled) return;
+            applyScheduled = true;
+
+            queueMicrotask(() => {
+                applyScheduled = false;
+                applyRules();
+            });
+        };
+
+        const observeNestedRoot = (shadowRoot) => {
+            if (!shadowRoot || nestedRootObservers.has(shadowRoot)) return;
+
+            const observer = new MutationObserver(scheduleApply);
+            observer.observe(shadowRoot, {
+                childList: true,
+                subtree: true,
+                attributes: true,
+                attributeFilter: ['data-type']
+            });
+
+            nestedRootObservers.set(shadowRoot, observer);
+        };
+
+        // 遍历普通 DOM 与所有可访问的嵌套 Shadow DOM。
+        const walkDeep = (startNode, visit) => {
+            const visited = new Set();
+
+            const walk = (node) => {
+                if (!node || visited.has(node)) return;
+                visited.add(node);
+
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    visit(node);
+
+                    if (node.shadowRoot) {
+                        observeNestedRoot(node.shadowRoot);
+                        walk(node.shadowRoot);
+                    }
+                }
+
+                for (const child of node.children || []) {
+                    walk(child);
+                }
+            };
+
+            walk(startNode);
+        };
+
+        const containsGoodsMarker = (thread) => {
+            let found = false;
+
+            walkDeep(thread, (element) => {
+                if (element.matches('[data-type="goods"]')) {
+                    found = true;
+                }
+            });
+
+            return found;
+        };
+
+        const setThreadHidden = (thread, hidden) => {
+            if (hidden) {
+                if (!hiddenThreadOriginalDisplay.has(thread)) {
+                    hiddenThreadOriginalDisplay.set(thread, {
+                        value: thread.style.getPropertyValue('display'),
+                        priority: thread.style.getPropertyPriority('display')
+                    });
+                }
+
+                thread.style.setProperty('display', 'none', 'important');
+                return;
+            }
+
+            const original = hiddenThreadOriginalDisplay.get(thread);
+            if (!original) return;
+
+            if (original.value) {
+                thread.style.setProperty(
+                    'display',
+                    original.value,
+                    original.priority
+                );
+            } else {
+                thread.style.removeProperty('display');
+            }
+
+            hiddenThreadOriginalDisplay.delete(thread);
+        };
 
         const applyRules = () => {
-            const commentsHost = document.querySelector('#commentapp > bili-comments');
+            const commentsHost = document.querySelector(
+                '#commentapp > bili-comments'
+            );
             const root = commentsHost && commentsHost.shadowRoot;
 
             if (!root) return;
@@ -278,59 +372,62 @@
                 if (commentsObserver) commentsObserver.disconnect();
 
                 commentsRoot = root;
-                commentsObserver = new MutationObserver(applyRules);
+                commentsObserver = new MutationObserver(scheduleApply);
                 commentsObserver.observe(root, {
                     childList: true,
                     subtree: true
                 });
             }
 
-            // 评论区内容容器：原 #contents 规则位于 bili-comments 的 Shadow DOM 内。
-            if (beautifyEnabled) {
-                const contents = root.querySelector('#contents');
-                if (contents) {
-                    contents.style.setProperty('padding-top', '0px', 'important');
-                }
+            observeNestedRoot(root);
+
+            // #contents 位于 bili-comments 的第一层 Shadow DOM。
+            const contents = root.querySelector('#contents');
+            if (contents) {
+                contents.style.setProperty(
+                    'padding-top',
+                    '0px',
+                    'important'
+                );
             }
 
-            // 仅隐藏包含商品标记的评论线程，不影响普通评论线程。
-            const goodsThreads = root.querySelectorAll(
-                '#feed > bili-comment-thread-renderer:has([data-type="goods"])'
+            // 只隐藏包含商品标记的整条评论线程。
+            // 商品标记位于评论线程自己的 Shadow DOM 的更深层级中，
+            // 因此不能用单层 querySelector / :has() 完成匹配。
+            const threads = root.querySelectorAll(
+                '#feed > bili-comment-thread-renderer'
             );
 
-            goodsThreads.forEach(thread => {
-                thread.style.setProperty('display', 'none', 'important');
+            threads.forEach((thread) => {
+                const hasGoods = containsGoodsMarker(thread);
+                setThreadHidden(thread, hasGoods);
             });
 
-            // 导航栏位于 bili-comments-header-renderer 自己的 Shadow DOM 中。
+            // #navbar 位于 bili-comments-header-renderer 的 Shadow DOM。
             const headerHost = root.querySelector(
                 '#header > bili-comments-header-renderer'
             );
-            const nextHeaderRoot = headerHost && headerHost.shadowRoot;
+            const headerRoot = headerHost && headerHost.shadowRoot;
 
-            if (nextHeaderRoot) {
-                if (nextHeaderRoot !== headerRoot) {
-                    if (headerObserver) headerObserver.disconnect();
+            if (headerRoot) {
+                observeNestedRoot(headerRoot);
 
-                    headerRoot = nextHeaderRoot;
-                    headerObserver = new MutationObserver(applyRules);
-                    headerObserver.observe(headerRoot, {
-                        childList: true,
-                        subtree: true
-                    });
-                }
-
-                if (beautifyEnabled) {
-                    const navbar = headerRoot.querySelector('#navbar');
-                    if (navbar) {
-                        navbar.style.setProperty('margin-bottom', '0px', 'important');
-                    }
+                const navbar = headerRoot.querySelector('#navbar');
+                if (navbar) {
+                    navbar.style.setProperty(
+                        'margin-bottom',
+                        '0px',
+                        'important'
+                    );
                 }
             }
+
+            // 同步发现评论线程及其内部组件上新挂载的 ShadowRoot。
+            walkDeep(root, () => {});
         };
 
-        // 监听组件挂载、Shadow DOM 内部更新以及后续加载的评论线程。
-        const documentObserver = new MutationObserver(applyRules);
+        // 页面及评论组件后续挂载时重新扫描。
+        const documentObserver = new MutationObserver(scheduleApply);
         documentObserver.observe(document, {
             childList: true,
             subtree: true
@@ -339,16 +436,21 @@
         applyRules();
 
         if (window.customElements) {
-            window.customElements.whenDefined('bili-comments').then(applyRules);
-            window.customElements
-                .whenDefined('bili-comments-header-renderer')
-                .then(applyRules);
+            [
+                'bili-comments',
+                'bili-comment-thread-renderer',
+                'bili-comment-renderer',
+                'bili-comment-replies-renderer',
+                'bili-comments-header-renderer'
+            ].forEach((name) => {
+                window.customElements.whenDefined(name).then(scheduleApply);
+            });
         }
     };
 
     installBilibiliShadowRules();
 
-oldMenu    // 非目标网站只显示全局菜单，不注入任何 CSS。
+    // 非目标网站只显示全局菜单，不注入任何 CSS。
     if (!currentSite) return;
 
     // 当前网站总开关关闭时，不注入任何页面美化样式。
@@ -797,10 +899,13 @@ oldMenu    // 非目标网站只显示全局菜单，不注入任何 CSS。
                    哔哩哔哩动态页
                    ========================= */
 
-                /* 主内容区铺满可用视口宽度 */
+                /* 主内容区铺满父容器；同时解除 flex/grid 的列宽限制 */
                 main {
                     width: 100% !important;
                     max-width: none !important;
+                    min-width: 0 !important;
+                    flex: 1 1 100% !important;
+                    grid-column: 1 / -1 !important;
                     margin-left: 0 !important;
                     margin-right: 0 !important;
                     box-sizing: border-box !important;

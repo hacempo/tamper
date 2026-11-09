@@ -154,6 +154,16 @@
     ];
 
     /*
+     * 以下选择器在原 block.txt 中已明确标记为“暂不启用”，
+     * 因用途或影响范围尚未确认，迁移后继续保留为注释：
+     *
+     * tieba.baidu.com##.head-line
+     * www.zhihu.com##.css-jghqwm
+     * www.zhihu.com##.TopstoryItem:has(.ArticleItem)
+     * www.zhihu.com##.TopstoryItem--advertCard
+     */
+
+    /*
      * 将样式节点尽早加入 document.head。
      * document-start 时 head 尚未创建的情况也会自动处理。
      */

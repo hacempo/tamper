@@ -527,7 +527,10 @@
 
                 if (host.shadowRoot) {
                     pendingShadowHosts.delete(host);
-                    observeNestedRoot(host.shadowRoot);
+                    observeNestedRoot(
+                        host.shadowRoot,
+                        host.localName === 'bili-comments-header-renderer'
+                    );
                     discoveredRoot = true;
                 }
             }

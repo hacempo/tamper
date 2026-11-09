@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         beautify
 // @namespace    http://tampermonkey.net/
-// @version      4.7
+// @version      4.8
 // @description  为指定网站调整页面布局
 // @match        *://*/*
 // @run-at       document-start
@@ -173,6 +173,13 @@
         currentSite && GM_getValue('beautify:enabled:' + currentSite.id, true)
     );
 
+    // 提前创建主样式节点，避免等到脚本末尾才插入 style。
+    const style = isCurrentSiteEnabled
+        ? document.createElement('style')
+        : null;
+
+    if (style) style.id = 'beautify-style';
+
     for (const site of SITE_CONFIGS) {
         const storageKey = 'beautify:enabled:' + site.id;
         const isEnabled = GM_getValue(storageKey, true);
@@ -225,6 +232,10 @@
 
         install();
     };
+
+    if (style) {
+        installStyleElement(style);
+    }
 
     const activeBlockSelectors = isCurrentSiteEnabled
         ? BLOCK_RULES
@@ -426,7 +437,10 @@
             );
             const root = commentsHost && commentsHost.shadowRoot;
 
-            if (!root) return;
+            if (!root) {
+                if (commentsHost) pendingShadowHosts.add(commentsHost);
+                return;
+            }
 
             if (root !== commentsRoot) {
                 if (commentsObserver) commentsObserver.disconnect();
@@ -457,6 +471,11 @@
             const headerHost = root.querySelector(
                 '#header > bili-comments-header-renderer'
             );
+
+            if (headerHost && !headerHost.shadowRoot) {
+                pendingShadowHosts.add(headerHost);
+            }
+
             const nextHeaderRoot = headerHost && headerHost.shadowRoot;
 
             if (nextHeaderRoot) {
@@ -542,9 +561,6 @@
 
     // 当前网站总开关关闭时，不注入任何页面美化样式。
     if (!isCurrentSiteEnabled) return;
-
-    const style = document.createElement('style');
-    style.id = 'beautify-style';
 
     if (currentSite.id === 'zhihu') {
 
@@ -1002,11 +1018,7 @@
     }
 
 
-    /* ---------- 尽早注入 CSS ---------- */
-
-    if (style.textContent.trim()) {
-        installStyleElement(style);
-    }
+    /* ---------- 普通页面样式已提前挂载，填充 CSS 后启动 B 站处理 ---------- */
 
     // 普通页面样式先完成注入，再启动 B 站评论 Shadow DOM 处理。
     installBilibiliShadowRules();

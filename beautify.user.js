@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         beautify
 // @namespace    http://tampermonkey.net/
-// @version      4.4
+// @version      4.5
 // @description  为指定网站调整页面布局
 // @match        *://*/*
 // @run-at       document-start
@@ -434,6 +434,22 @@
         });
 
         applyRules();
+
+        /*
+         * 额外兜底：attachShadow() 本身不会触发外层 DOM 的 MutationObserver。
+         * B 站部分评论组件会在宿主节点插入后才异步创建自己的 ShadowRoot，
+         * 因此定期重新扫描，确保迟到的嵌套 ShadowRoot 也能被发现。
+         */
+        const shadowRescanTimer = window.setInterval(() => {
+            if (document.visibilityState === 'visible') {
+                applyRules();
+            }
+        }, 1200);
+
+        // 页面离开时停止兜底扫描。
+        window.addEventListener('pagehide', () => {
+            window.clearInterval(shadowRescanTimer);
+        }, { once: true });
 
         if (window.customElements) {
             [

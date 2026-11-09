@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         beautify
 // @namespace    http://tampermonkey.net/
-// @version      4.3
+// @version      4.4
 // @description  为指定网站调整页面布局
 // @match        *://*/*
 // @run-at       document-start

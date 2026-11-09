@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         beautify
 // @namespace    http://tampermonkey.net/
-// @version      4.1
+// @version      4.2
 // @description  为指定网站调整页面布局
 // @match        *://*/*
 // @run-at       document-start
@@ -22,10 +22,280 @@
     const STYLE_SITES = [
         { id: 'zhihu', name: '知乎', hostname: 'www.zhihu.com' },
         { id: 'tieba', name: '百度贴吧', hostname: 'tieba.baidu.com' },
-        { id: 'bilibili', name: '哔哩哔哩', hostname: 'www.bilibili.com' }
+        { id: 'bilibili', name: '哔哩哔哩', hostnames: ['www.bilibili.com', 't.bilibili.com'] }
     ];
 
     const currentHostname = location.hostname.toLowerCase();
+
+    /*
+     * 从 block.txt 迁移的屏蔽规则。
+     * 这些规则独立于站点美化开关，保持原过滤器的全站生效逻辑。
+     */
+    const BLOCK_RULES = [
+        {
+            domains: ['tieba.baidu.com'],
+            selectors: [
+                '.home-left',
+                '.right-menu',
+                '.thread-action-area',
+                '.pc-pb-first-floor-interactive',
+                '.pc-pb-comments-desc',
+                '.pc-pb-reply-box',
+                '.right-nav-bar',
+                '.frs-right-sidebar'
+            ]
+        },
+        {
+            domains: ['115.com'],
+            selectors: [
+                '#js_bottom_notification',
+                '.feature-float',
+                '.container-leftside',
+                '[data-nav="photo"]',
+                '[data-nav="credentials"]',
+                '[data-nav="note"]',
+                '.ceiling-feature',
+                '.ceiling-link-temp'
+            ]
+        },
+        {
+            domains: ['115vod.com'],
+            selectors: [
+                '.feature-float'
+            ]
+        },
+        {
+            domains: ['ngabbs.com'],
+            selectors: [
+                '.topicrow .c3',
+                '.topicrow .c4',
+                '.c1',
+                '.cell',
+                '#toptopics',
+                '#fast_post_c'
+            ]
+        },
+        {
+            domains: ['yun.123pan.cn'],
+            selectors: [
+                '.notice-box',
+                '.entry_p0tlq',
+                '.mfy-main-layout__head',
+                'aside',
+                '.withSideMenuLayoutSider_ELJ6a'
+            ]
+        },
+        {
+            domains: ['www.zhihu.com'],
+            selectors: [
+                '.css-bkewaf',
+                '.QuestionHeader-side',
+                '[href="https://www.zhihu.com/column-square"]',
+                '[href="https://www.zhihu.com/ring-feeds"]',
+                '.css-53paqb',
+                '[href="https://www.zhihu.com/project-square"]',
+                '[href="https://www.zhihu.com/fiore/h5/vip-web"]',
+                '[href="https://zhida.zhihu.com/"]',
+                '.SearchBar-askContainer',
+                '.css-1vbrp2j',
+                '.css-ruapjk',
+                '.QuestionHeader-footer',
+                '.FollowButton',
+                '.Reward',
+                '.ContentItem-actions > :first-child',
+                '[aria-label="喜欢"]',
+                '[data-tooltip="解释这篇内容"]',
+                '.css-upmq18',
+                '.css-1fo89v5',
+                '.css-140jo2',
+                '.WriteArea',
+                '.CornerButtonsGroup'
+            ]
+        },
+        {
+            domains: ['www.bilibili.com'],
+            selectors: [
+                '.adblock-tips',
+                '.recommended-swipe',
+                '.floor-single-card',
+                '.feed-card:not(:has(.enable-no-interest))',
+                '.bili-feed-card:not(:has(.enable-no-interest))',
+                '.video-resource-list',
+                '.video-page-special-card-small',
+                '#commentbox',
+                '#footer',
+                '.bili-comments-bottom-fixed-wrapper',
+                '.left-entry-main > :nth-child(n+4)',
+                '.right-entry__main > :nth-child(2), .right-entry__main > :nth-child(3), .right-entry__main > :nth-child(7), .right-entry__main > :nth-child(8)'
+            ]
+        },
+        {
+            domains: ['t.bilibili.com'],
+            selectors: [
+                'aside',
+                '.bili-dyn-publishing'
+            ]
+        },
+        {
+            domains: ['x.com'],
+            selectors: [
+                '[aria-label="主页时间线"] > .r-184en5c',
+                'article .r-kzbkwu > :last-child'
+            ]
+        },
+        {
+            domains: ['douyin.com'],
+            selectors: [
+                '.VAQA49VP',
+                '.Ctt1baq8',
+                '.comment-input-container'
+            ]
+        }
+    ];
+
+    /*
+     * 将样式节点尽早加入 document.head。
+     * document-start 时 head 尚未创建的情况也会自动处理。
+     */
+    const installStyleElement = (styleElement) => {
+        let observer;
+
+        const install = () => {
+            const target = document.head || document.documentElement;
+
+            if (target && styleElement.parentNode !== target) {
+                target.appendChild(styleElement);
+            }
+
+            if (document.head && observer) {
+                observer.disconnect();
+            }
+        };
+
+        if (!document.head) {
+            observer = new MutationObserver(install);
+            observer.observe(document, {
+                childList: true,
+                subtree: true
+            });
+        }
+
+        install();
+    };
+
+    const activeBlockSelectors = BLOCK_RULES
+        .filter(rule => rule.domains.some(domain =>
+            currentHostname === domain || currentHostname.endsWith('.' + domain)
+        ))
+        .flatMap(rule => rule.selectors);
+
+    if (activeBlockSelectors.length > 0) {
+        const blockStyle = document.createElement('style');
+        blockStyle.id = 'beautify-block-style';
+        blockStyle.textContent = activeBlockSelectors
+            .map(selector => selector + ' {\n    display: none !important;\n}')
+            .join('\n\n');
+
+        installStyleElement(blockStyle);
+    }
+
+    /*
+     * Bilibili 评论区使用 Shadow DOM。
+     * 普通 document CSS 无法穿透，因此按实际 JS 路径处理：
+     * #commentapp > bili-comments 的 shadowRoot
+     *   ├─ #contents
+     *   ├─ #feed > bili-comment-thread-renderer
+     *   └─ #header > bili-comments-header-renderer 的 shadowRoot > #navbar
+     */
+    const installBilibiliShadowRules = () => {
+        if (currentHostname !== 'www.bilibili.com') return;
+
+        const beautifyEnabled = GM_getValue('beautify:enabled:bilibili', true);
+
+        let commentsRoot = null;
+        let headerRoot = null;
+        let commentsObserver = null;
+        let headerObserver = null;
+
+        const applyRules = () => {
+            const commentsHost = document.querySelector('#commentapp > bili-comments');
+            const root = commentsHost && commentsHost.shadowRoot;
+
+            if (!root) return;
+
+            if (root !== commentsRoot) {
+                if (commentsObserver) commentsObserver.disconnect();
+
+                commentsRoot = root;
+                commentsObserver = new MutationObserver(applyRules);
+                commentsObserver.observe(root, {
+                    childList: true,
+                    subtree: true
+                });
+            }
+
+            // 评论区内容容器：原 #contents 规则位于 bili-comments 的 Shadow DOM 内。
+            if (beautifyEnabled) {
+                const contents = root.querySelector('#contents');
+                if (contents) {
+                    contents.style.setProperty('padding-top', '0px', 'important');
+                }
+            }
+
+            // 仅隐藏包含商品标记的评论线程，不影响普通评论线程。
+            const goodsThreads = root.querySelectorAll(
+                '#feed > bili-comment-thread-renderer:has([data-type="goods"])'
+            );
+
+            goodsThreads.forEach(thread => {
+                thread.style.setProperty('display', 'none', 'important');
+            });
+
+            // 导航栏位于 bili-comments-header-renderer 自己的 Shadow DOM 中。
+            const headerHost = root.querySelector(
+                '#header > bili-comments-header-renderer'
+            );
+            const nextHeaderRoot = headerHost && headerHost.shadowRoot;
+
+            if (nextHeaderRoot) {
+                if (nextHeaderRoot !== headerRoot) {
+                    if (headerObserver) headerObserver.disconnect();
+
+                    headerRoot = nextHeaderRoot;
+                    headerObserver = new MutationObserver(applyRules);
+                    headerObserver.observe(headerRoot, {
+                        childList: true,
+                        subtree: true
+                    });
+                }
+
+                if (beautifyEnabled) {
+                    const navbar = headerRoot.querySelector('#navbar');
+                    if (navbar) {
+                        navbar.style.setProperty('margin-bottom', '0px', 'important');
+                    }
+                }
+            }
+        };
+
+        // 监听组件挂载、Shadow DOM 内部更新以及后续加载的评论线程。
+        const documentObserver = new MutationObserver(applyRules);
+        documentObserver.observe(document, {
+            childList: true,
+            subtree: true
+        });
+
+        applyRules();
+
+        if (window.customElements) {
+            window.customElements.whenDefined('bili-comments').then(applyRules);
+            window.customElements
+                .whenDefined('bili-comments-header-renderer')
+                .then(applyRules);
+        }
+    };
+
+    installBilibiliShadowRules();
 
     for (const site of STYLE_SITES) {
         const storageKey = 'beautify:enabled:' + site.id;
@@ -42,7 +312,7 @@
     }
 
     const currentSite = STYLE_SITES.find(site =>
-        currentHostname === site.hostname
+        (site.hostnames || [site.hostname]).includes(currentHostname)
     );
 
     // 非目标网站只显示全局菜单，不注入任何 CSS。
@@ -488,50 +758,30 @@
         `;
     } else if (currentSite.id === 'bilibili') {
 
-        style.textContent = `
-            /* =========================
-               哔哩哔哩
-               ========================= */
+        if (currentHostname === 't.bilibili.com') {
+            style.textContent = `
+                /* =========================
+                   哔哩哔哩动态页
+                   ========================= */
 
-            /* 视频页内容区域顶部内边距归零 */
-            div#contents {
-                padding-top: 0px !important;
-            }
-
-            /* 导航栏底部外边距归零 */
-            #navbar {
-                margin-bottom: 0px !important;
-            }
-        `;
+                /* 主内容区铺满可用视口宽度 */
+                main {
+                    width: 100% !important;
+                    max-width: none !important;
+                    margin-left: 0 !important;
+                    margin-right: 0 !important;
+                    box-sizing: border-box !important;
+                }
+            `;
+        }
     }
 
 
     /* ---------- 尽早注入 CSS ---------- */
 
-    let styleObserver;
-
-    const installStyle = () => {
-        const target = document.head || document.documentElement;
-
-        if (target && style.parentNode !== target) {
-            target.appendChild(style);
-        }
-
-        if (document.head && styleObserver) {
-            styleObserver.disconnect();
-        }
-    };
-
-    if (!document.head) {
-        styleObserver = new MutationObserver(installStyle);
-
-        styleObserver.observe(document, {
-            childList: true,
-            subtree: true
-        });
+    if (style.textContent.trim()) {
+        installStyleElement(style);
     }
-
-    installStyle();
 
 
     /* ---------- 动态计算顶栏宽度 ---------- */

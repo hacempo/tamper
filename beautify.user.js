@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         beautify
 // @namespace    http://tampermonkey.net/
-// @version      4.5
+// @version      4.6
 // @description  为指定网站调整页面布局
 // @match        *://*/*
 // @run-at       document-start
@@ -127,10 +127,7 @@
                 '.feed-card:not(:has(.enable-no-interest))',
                 '.bili-feed-card:not(:has(.enable-no-interest))',
                 '.video-resource-list',
-                '.video-page-special-card-small',
-                '#commentbox',
-                '#footer',
-                '.bili-comments-bottom-fixed-wrapper'
+                '.video-page-special-card-small'
             ]
         },
         {
@@ -288,7 +285,7 @@
                 childList: true,
                 subtree: true,
                 attributes: true,
-                attributeFilter: ['data-type']
+                attributeFilter: ['data-type', 'class', 'style', 'hidden', 'aria-hidden']
             });
 
             nestedRootObservers.set(shadowRoot, observer);
@@ -360,6 +357,18 @@
             hiddenThreadOriginalDisplay.delete(thread);
         };
 
+        const hideShadowElement = (element) => {
+            if (!element) return;
+
+            // Avoid repeatedly mutating style when the element is already hidden.
+            if (
+                element.style.getPropertyValue('display') !== 'none' ||
+                element.style.getPropertyPriority('display') !== 'important'
+            ) {
+                element.style.setProperty('display', 'none', 'important');
+            }
+        };
+
         const applyRules = () => {
             const commentsHost = document.querySelector(
                 '#commentapp > bili-comments'
@@ -401,6 +410,16 @@
             threads.forEach((thread) => {
                 const hasGoods = containsGoodsMarker(thread);
                 setThreadHidden(thread, hasGoods);
+
+                // 评论操作栏 #footer 位于每个 bili-comment-renderer 自己的 Shadow DOM。
+                walkDeep(thread, (element) => {
+                    if (element.tagName !== 'BILI-COMMENT-RENDERER') return;
+
+                    const commentRoot = element.shadowRoot;
+                    if (!commentRoot) return;
+
+                    hideShadowElement(commentRoot.querySelector('#footer'));
+                });
             });
 
             // #navbar 位于 bili-comments-header-renderer 的 Shadow DOM。
@@ -420,6 +439,15 @@
                         'important'
                     );
                 }
+
+                // 评论区顶部输入框：#commentbox 位于 Header Shadow DOM。
+                hideShadowElement(headerRoot.querySelector('#commentbox'));
+
+                // 下滑页面后动态出现的悬浮输入框。
+                // Header ShadowRoot 的 childList/class/style 变化会触发重新扫描。
+                hideShadowElement(
+                    headerRoot.querySelector('.bili-comments-bottom-fixed-wrapper')
+                );
             }
 
             // 同步发现评论线程及其内部组件上新挂载的 ShadowRoot。

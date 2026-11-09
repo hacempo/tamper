@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         beautify
 // @namespace    http://tampermonkey.net/
-// @version      4.6
+// @version      4.7
 // @description  为指定网站调整页面布局
 // @match        *://*/*
 // @run-at       document-start
@@ -260,12 +260,21 @@
 
         let commentsRoot = null;
         let commentsObserver = null;
+        let headerRoot = null;
         let applyScheduled = false;
 
-        // 一个评论线程可能再嵌套 bili-comment-renderer 等多个 Shadow DOM。
-        // 每个已发现的开放 ShadowRoot 都单独监听，避免漏掉内部异步加载的商品标记。
         const nestedRootObservers = new Map();
+        const pendingShadowHosts = new Set();
         const hiddenThreadOriginalDisplay = new WeakMap();
+
+        const SHADOW_COMPONENTS = new Set([
+            'bili-comments',
+            'bili-comment-thread-renderer',
+            'bili-comment-renderer',
+            'bili-comment-replies-renderer',
+            'bili-comment-reply-renderer',
+            'bili-comments-header-renderer'
+        ]);
 
         const scheduleApply = () => {
             if (applyScheduled) return;
@@ -277,55 +286,50 @@
             });
         };
 
-        const observeNestedRoot = (shadowRoot) => {
-            if (!shadowRoot || nestedRootObservers.has(shadowRoot)) return;
+        const setImportantStyle = (element, property, value) => {
+            if (!element) return;
+
+            if (
+                element.style.getPropertyValue(property) !== value ||
+                element.style.getPropertyPriority(property) !== 'important'
+            ) {
+                element.style.setProperty(property, value, 'important');
+            }
+        };
+
+        const hideShadowElement = (element) => {
+            setImportantStyle(element, 'display', 'none');
+        };
+
+        const observeNestedRoot = (shadowRoot, isHeader = false) => {
+            if (!shadowRoot) return;
+
+            const existing = nestedRootObservers.get(shadowRoot);
+            if (existing) return;
 
             const observer = new MutationObserver(scheduleApply);
-            observer.observe(shadowRoot, {
+            const options = {
                 childList: true,
-                subtree: true,
-                attributes: true,
-                attributeFilter: ['data-type', 'class', 'style', 'hidden', 'aria-hidden']
-            });
-
-            nestedRootObservers.set(shadowRoot, observer);
-        };
-
-        // 遍历普通 DOM 与所有可访问的嵌套 Shadow DOM。
-        const walkDeep = (startNode, visit) => {
-            const visited = new Set();
-
-            const walk = (node) => {
-                if (!node || visited.has(node)) return;
-                visited.add(node);
-
-                if (node.nodeType === Node.ELEMENT_NODE) {
-                    visit(node);
-
-                    if (node.shadowRoot) {
-                        observeNestedRoot(node.shadowRoot);
-                        walk(node.shadowRoot);
-                    }
-                }
-
-                for (const child of node.children || []) {
-                    walk(child);
-                }
+                subtree: true
             };
 
-            walk(startNode);
-        };
+            if (isHeader) {
+                // Header 中悬浮输入框可能通过 class/style 切换显示状态。
+                options.attributes = true;
+                options.attributeFilter = [
+                    'class',
+                    'style',
+                    'hidden',
+                    'aria-hidden'
+                ];
+            } else {
+                // 评论内容只需关注新节点和商品标记属性变化。
+                options.attributes = true;
+                options.attributeFilter = ['data-type'];
+            }
 
-        const containsGoodsMarker = (thread) => {
-            let found = false;
-
-            walkDeep(thread, (element) => {
-                if (element.matches('[data-type="goods"]')) {
-                    found = true;
-                }
-            });
-
-            return found;
+            observer.observe(shadowRoot, options);
+            nestedRootObservers.set(shadowRoot, observer);
         };
 
         const setThreadHidden = (thread, hidden) => {
@@ -357,19 +361,63 @@
             hiddenThreadOriginalDisplay.delete(thread);
         };
 
-        const setImportantStyle = (element, property, value) => {
-            if (!element) return;
+        /*
+         * 一次遍历完成三件事：
+         * 1. 搜索商品标记（包括任意深度 Shadow DOM）；
+         * 2. 隐藏一级评论和二级回复组件各自 ShadowRoot 中的 #footer；
+         * 3. 发现尚未 attachShadow 的自定义组件，交给轻量轮询兜底。
+         */
+        const scanThread = (thread) => {
+            let hasGoods = false;
+            const visited = new Set();
 
-            if (
-                element.style.getPropertyValue(property) !== value ||
-                element.style.getPropertyPriority(property) !== 'important'
-            ) {
-                element.style.setProperty(property, value, 'important');
-            }
-        };
+            const walk = (node) => {
+                if (!node || visited.has(node)) return;
+                visited.add(node);
 
-        const hideShadowElement = (element) => {
-            setImportantStyle(element, 'display', 'none');
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    const element = node;
+
+                    if (element.matches('[data-type="goods"]')) {
+                        hasGoods = true;
+                    }
+
+                    const tag = element.localName;
+
+                    if (
+                        tag === 'bili-comment-renderer' ||
+                        tag === 'bili-comment-reply-renderer'
+                    ) {
+                        const commentRoot = element.shadowRoot;
+
+                        if (commentRoot) {
+                            observeNestedRoot(commentRoot);
+                            hideShadowElement(commentRoot.querySelector('#footer'));
+                        }
+                    }
+
+                    if (
+                        tag &&
+                        tag.startsWith('bili-') &&
+                        SHADOW_COMPONENTS.has(tag) &&
+                        !element.shadowRoot
+                    ) {
+                        pendingShadowHosts.add(element);
+                    }
+
+                    if (element.shadowRoot) {
+                        observeNestedRoot(element.shadowRoot);
+                        walk(element.shadowRoot);
+                    }
+                }
+
+                for (const child of node.children || []) {
+                    walk(child);
+                }
+            };
+
+            walk(thread);
+            setThreadHidden(thread, hasGoods);
         };
 
         const applyRules = () => {
@@ -387,69 +435,53 @@
                 commentsObserver = new MutationObserver(scheduleApply);
                 commentsObserver.observe(root, {
                     childList: true,
-                    subtree: true
+                    subtree: true,
+                    attributes: true,
+                    attributeFilter: ['data-type']
                 });
             }
 
             observeNestedRoot(root);
 
-            // #contents 位于 bili-comments 的第一层 Shadow DOM。
             const contents = root.querySelector('#contents');
             if (contents) {
                 setImportantStyle(contents, 'padding-top', '0px');
             }
 
-            // 只隐藏包含商品标记的整条评论线程。
-            // 商品标记位于评论线程自己的 Shadow DOM 的更深层级中，
-            // 因此不能用单层 querySelector / :has() 完成匹配。
             const threads = root.querySelectorAll(
                 '#feed > bili-comment-thread-renderer'
             );
 
-            threads.forEach((thread) => {
-                const hasGoods = containsGoodsMarker(thread);
-                setThreadHidden(thread, hasGoods);
+            threads.forEach(scanThread);
 
-                // 评论操作栏 #footer 位于每个 bili-comment-renderer 自己的 Shadow DOM。
-                walkDeep(thread, (element) => {
-                    if (element.tagName !== 'BILI-COMMENT-RENDERER') return;
-
-                    const commentRoot = element.shadowRoot;
-                    if (!commentRoot) return;
-
-                    hideShadowElement(commentRoot.querySelector('#footer'));
-                });
-            });
-
-            // #navbar 位于 bili-comments-header-renderer 的 Shadow DOM。
             const headerHost = root.querySelector(
                 '#header > bili-comments-header-renderer'
             );
-            const headerRoot = headerHost && headerHost.shadowRoot;
+            const nextHeaderRoot = headerHost && headerHost.shadowRoot;
 
-            if (headerRoot) {
-                observeNestedRoot(headerRoot);
+            if (nextHeaderRoot) {
+                headerRoot = nextHeaderRoot;
+                observeNestedRoot(headerRoot, true);
 
                 const navbar = headerRoot.querySelector('#navbar');
-                if (navbar) {
-                    setImportantStyle(navbar, 'margin-bottom', '0px');
-                }
+                setImportantStyle(navbar, 'margin-bottom', '0px');
 
-                // 评论区顶部输入框：#commentbox 位于 Header Shadow DOM。
+                // Header Shadow DOM 中的输入框和滚动后出现的悬浮输入框。
                 hideShadowElement(headerRoot.querySelector('#commentbox'));
-
-                // 下滑页面后动态出现的悬浮输入框。
-                // Header ShadowRoot 的 childList/class/style 变化会触发重新扫描。
                 hideShadowElement(
                     headerRoot.querySelector('.bili-comments-bottom-fixed-wrapper')
                 );
-            }
 
-            // 同步发现评论线程及其内部组件上新挂载的 ShadowRoot。
-            walkDeep(root, () => {});
+                if (
+                    headerHost.localName &&
+                    !headerHost.shadowRoot
+                ) {
+                    pendingShadowHosts.add(headerHost);
+                }
+            }
         };
 
-        // 页面及评论组件后续挂载时重新扫描。
+        // 新评论、展开回复、翻页和 Header 动态节点变化时重新扫描。
         const documentObserver = new MutationObserver(scheduleApply);
         documentObserver.observe(document, {
             childList: true,
@@ -459,35 +491,51 @@
         applyRules();
 
         /*
-         * 额外兜底：attachShadow() 本身不会触发外层 DOM 的 MutationObserver。
-         * B 站部分评论组件会在宿主节点插入后才异步创建自己的 ShadowRoot，
-         * 因此定期重新扫描，确保迟到的嵌套 ShadowRoot 也能被发现。
+         * 不再每 1.2 秒完整遍历整个评论树。
+         * 只检查此前见过、但当时尚未创建 ShadowRoot 的 bili-* 宿主节点。
+         * 发现 ShadowRoot 后立即挂观察器并触发一次局部重扫。
          */
         const shadowRescanTimer = window.setInterval(() => {
-            if (document.visibilityState === 'visible') {
-                applyRules();
-            }
-        }, 1200);
+            if (document.visibilityState !== 'visible') return;
 
-        // 页面离开时停止兜底扫描。
+            let discoveredRoot = false;
+
+            for (const host of pendingShadowHosts) {
+                if (!host.isConnected) {
+                    pendingShadowHosts.delete(host);
+                    continue;
+                }
+
+                if (host.shadowRoot) {
+                    pendingShadowHosts.delete(host);
+                    observeNestedRoot(host.shadowRoot);
+                    discoveredRoot = true;
+                }
+            }
+
+            if (discoveredRoot) scheduleApply();
+        }, 1000);
+
         window.addEventListener('pagehide', () => {
             window.clearInterval(shadowRescanTimer);
+            documentObserver.disconnect();
+            if (commentsObserver) commentsObserver.disconnect();
+
+            for (const observer of nestedRootObservers.values()) {
+                observer.disconnect();
+            }
+            nestedRootObservers.clear();
+            pendingShadowHosts.clear();
         }, { once: true });
 
         if (window.customElements) {
-            [
-                'bili-comments',
-                'bili-comment-thread-renderer',
-                'bili-comment-renderer',
-                'bili-comment-replies-renderer',
-                'bili-comments-header-renderer'
-            ].forEach((name) => {
+            for (const name of SHADOW_COMPONENTS) {
                 window.customElements.whenDefined(name).then(scheduleApply);
-            });
+            }
         }
     };
 
-    installBilibiliShadowRules();
+
 
     // 非目标网站只显示全局菜单，不注入任何 CSS。
     if (!currentSite) return;
@@ -959,6 +1007,9 @@
     if (style.textContent.trim()) {
         installStyleElement(style);
     }
+
+    // 普通页面样式先完成注入，再启动 B 站评论 Shadow DOM 处理。
+    installBilibiliShadowRules();
 
 
     /* ---------- 动态计算顶栏宽度 ---------- */

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         beautify
 // @namespace    http://tampermonkey.net/
-// @version      4.2
+// @version      4.3
 // @description  为指定网站调整页面布局
 // @match        *://*/*
 // @run-at       document-start
@@ -16,13 +16,19 @@
 
     /*
      * 全局网站开关
-     * 无论当前打开哪个网站，油猴菜单都会显示以下全部开关。
-     * 未设置过的站点默认启用；只控制对应站点的 CSS 美化。
+     * 每个网站的一个开关同时控制该站点的页面美化和屏蔽规则。
+     * 未设置过的站点默认启用；在任意网站的油猴菜单中均可切换。
      */
-    const STYLE_SITES = [
-        { id: 'zhihu', name: '知乎', hostname: 'www.zhihu.com' },
-        { id: 'tieba', name: '百度贴吧', hostname: 'tieba.baidu.com' },
-        { id: 'bilibili', name: '哔哩哔哩', hostnames: ['www.bilibili.com', 't.bilibili.com'] }
+    const SITE_CONFIGS = [
+        { id: 'tieba', name: '百度贴吧', domains: ['tieba.baidu.com'] },
+        { id: '115', name: '115 网盘', domains: ['115.com'] },
+        { id: '115vod', name: '115 视频', domains: ['115vod.com'] },
+        { id: 'nga', name: 'NGA 玩家社区', domains: ['ngabbs.com'] },
+        { id: '123pan', name: '123 云盘', domains: ['yun.123pan.cn'] },
+        { id: 'zhihu', name: '知乎', domains: ['www.zhihu.com'] },
+        { id: 'bilibili', name: '哔哩哔哩', domains: ['bilibili.com'] },
+        { id: 'x', name: 'X', domains: ['x.com'] },
+        { id: 'douyin', name: '抖音', domains: ['douyin.com'] }
     ];
 
     const currentHostname = location.hostname.toLowerCase();
@@ -124,9 +130,15 @@
                 '.video-page-special-card-small',
                 '#commentbox',
                 '#footer',
-                '.bili-comments-bottom-fixed-wrapper',
+                '.bili-comments-bottom-fixed-wrapper'
+            ]
+        },
+        {
+            // Bilibili 顶栏存在于所有 Bilibili 子域。
+            domains: ['bilibili.com'],
+            selectors: [
                 '.left-entry-main > :nth-child(n+4)',
-                '.right-entry__main > :nth-child(2), .right-entry__main > :nth-child(3), .right-entry__main > :nth-child(7), .right-entry__main > :nth-child(8)'
+                '.right-entry__main > :not(:nth-child(4), :nth-child(5), :nth-child(6))'
             ]
         },
         {
@@ -152,6 +164,30 @@
             ]
         }
     ];
+
+    const isDomainMatch = (hostname, domain) =>
+        hostname === domain || hostname.endsWith('.' + domain);
+
+    const currentSite = SITE_CONFIGS.find(site =>
+        site.domains.some(domain => isDomainMatch(currentHostname, domain))
+    );
+
+    const isCurrentSiteEnabled = Boolean(
+        currentSite && GM_getValue('beautify:enabled:' + currentSite.id, true)
+    );
+
+    for (const site of SITE_CONFIGS) {
+        const storageKey = 'beautify:enabled:' + site.id;
+        const isEnabled = GM_getValue(storageKey, true);
+
+        GM_registerMenuCommand(
+            (isEnabled ? '关闭' : '开启') + '「' + site.name + '」美化与屏蔽',
+            () => {
+                GM_setValue(storageKey, !isEnabled);
+                location.reload();
+            }
+        );
+    }
 
     /*
      * 以下选择器在原 block.txt 中已明确标记为“暂不启用”，
@@ -193,11 +229,13 @@
         install();
     };
 
-    const activeBlockSelectors = BLOCK_RULES
-        .filter(rule => rule.domains.some(domain =>
-            currentHostname === domain || currentHostname.endsWith('.' + domain)
-        ))
-        .flatMap(rule => rule.selectors);
+    const activeBlockSelectors = isCurrentSiteEnabled
+        ? BLOCK_RULES
+            .filter(rule => rule.domains.some(domain =>
+                isDomainMatch(currentHostname, domain)
+            ))
+            .flatMap(rule => rule.selectors)
+        : [];
 
     if (activeBlockSelectors.length > 0) {
         const blockStyle = document.createElement('style');
@@ -218,7 +256,10 @@
      *   └─ #header > bili-comments-header-renderer 的 shadowRoot > #navbar
      */
     const installBilibiliShadowRules = () => {
-        if (currentHostname !== 'www.bilibili.com') return;
+        if (
+            currentHostname !== 'www.bilibili.com' ||
+            !GM_getValue('beautify:enabled:bilibili', true)
+        ) return;
 
         const beautifyEnabled = GM_getValue('beautify:enabled:bilibili', true);
 
@@ -307,29 +348,11 @@
 
     installBilibiliShadowRules();
 
-    for (const site of STYLE_SITES) {
-        const storageKey = 'beautify:enabled:' + site.id;
-        const isEnabled = GM_getValue(storageKey, true);
-
-        GM_registerMenuCommand(
-            (isEnabled ? '关闭' : '开启') + '「' + site.name + '」美化',
-            () => {
-                GM_setValue(storageKey, !isEnabled);
-                // 刷新当前页面以同步菜单状态；若当前页面属于该站点，样式也会立即切换。
-                location.reload();
-            }
-        );
-    }
-
-    const currentSite = STYLE_SITES.find(site =>
-        (site.hostnames || [site.hostname]).includes(currentHostname)
-    );
-
-    // 非目标网站只显示全局菜单，不注入任何 CSS。
+oldMenu    // 非目标网站只显示全局菜单，不注入任何 CSS。
     if (!currentSite) return;
 
-    // 当前网站的美化开关关闭时，不注入样式。
-    if (!GM_getValue('beautify:enabled:' + currentSite.id, true)) return;
+    // 当前网站总开关关闭时，不注入任何页面美化样式。
+    if (!isCurrentSiteEnabled) return;
 
     const style = document.createElement('style');
     style.id = 'beautify-style';

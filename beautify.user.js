@@ -34,8 +34,519 @@
     const currentHostname = location.hostname.toLowerCase();
 
     /*
-     * 从 block.txt 迁移的屏蔽规则。
-     * 这些规则独立于站点美化开关，保持原过滤器的全站生效逻辑。
+     * 各站点的基础布局样式集中存放，避免把大段 CSS 和注入流程混在条件分支中。
+     * 少量新增/覆盖样式另放在 SITE_STYLE_RULES 中，以选择器和属性对象维护。
+     */
+    const SITE_STYLES = {
+        zhihu: `
+            /* =========================
+               知乎
+               ========================= */
+
+            /* ---------- 问题页主栏 ---------- */
+
+            /*
+             * 问题页主容器。
+             * 取消左右留白和列间距。
+             */
+            .Question-main {
+                width: 100% !important;
+                max-width: none !important;
+                min-width: 0 !important;
+
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+
+                gap: 0 !important;
+                column-gap: 0 !important;
+
+                box-sizing: border-box !important;
+            }
+
+            /*
+             * 问题页主栏。
+             * 占满父容器剩余空间。
+             */
+            .Question-mainColumn {
+                width: 100% !important;
+                max-width: none !important;
+                min-width: 0 !important;
+
+                flex: 1 1 0% !important;
+
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+
+                box-sizing: border-box !important;
+            }
+
+            /*
+             * 知乎问题页内部布局容器。
+             */
+            .css-1gl8cva {
+                width: 100% !important;
+                max-width: none !important;
+                min-width: 0 !important;
+
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+
+                box-sizing: border-box !important;
+            }
+
+
+            /* ---------- 首页主栏 ---------- */
+
+            .Topstory-container {
+                width: 100% !important;
+                max-width: none !important;
+                min-width: 0 !important;
+                box-sizing: border-box !important;
+
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
+
+            .Topstory-mainColumn {
+                width: 100% !important;
+                max-width: none !important;
+                min-width: 0 !important;
+
+                flex: 1 1 0% !important;
+
+                margin-right: 0 !important;
+            }
+
+            .Topstory-mainColumnCard,
+            .Topstory-content,
+            .Topstory-recommend {
+                width: 100% !important;
+                max-width: none !important;
+                min-width: 0 !important;
+                box-sizing: border-box !important;
+            }
+
+
+            /* ---------- 顶栏 ---------- */
+
+            /*
+             * 顶栏 fixed 父容器。
+             *
+             * 根据 body 实际宽度动态设置，
+             * 避免 100vw 包含滚动条区域导致溢出。
+             */
+            div:has(> header.AppHeader) {
+                width: var(--beautify-content-width) !important;
+                max-width: none !important;
+                box-sizing: border-box !important;
+            }
+
+
+            /*
+             * 顶栏本体。
+             * 与主栏保持对齐。
+             */
+            header.AppHeader {
+                width: 100% !important;
+                max-width: none !important;
+                min-width: 0 !important;
+
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+
+                box-sizing: border-box !important;
+            }
+
+
+            /* 顶栏第一层内部容器 */
+            header.AppHeader > div {
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                box-sizing: border-box !important;
+            }
+
+
+            /*
+             * 顶栏中间区域：
+             * 左边 Logo
+             * 中间 导航 + 搜索
+             * 右边 头像
+             */
+            header.AppHeader > div > .css-51utkw {
+                flex: 1 1 0% !important;
+                width: auto !important;
+                max-width: none !important;
+                min-width: 0 !important;
+                box-sizing: border-box !important;
+            }
+
+
+            /* 中间区域内部内容容器 */
+            header.AppHeader > div > .css-51utkw > .css-51utkw {
+                flex: 1 1 auto !important;
+                width: auto !important;
+                max-width: none !important;
+                min-width: 0 !important;
+                box-sizing: border-box !important;
+            }
+
+
+            /* 原来的占位层 */
+            header.AppHeader .css-1ndlr1n {
+                max-width: 100% !important;
+                min-width: 0 !important;
+                box-sizing: border-box !important;
+            }
+
+
+            /*
+             * 搜索区域。
+             * 占据导航与头像之间的剩余空间。
+             */
+            .css-x84wzl {
+                min-width: 0 !important;
+                max-width: 100% !important;
+                flex: 1 1 0% !important;
+                justify-content: center !important;
+                box-sizing: border-box !important;
+            }
+
+
+            /*
+             * 搜索框响应式宽度：
+             * 最小 400px
+             * 最大 540px
+             */
+            @media (min-width: 800px) {
+
+                .css-x84wzl .SearchBar {
+                    width: clamp(
+                        400px,
+                        52vw,
+                        540px
+                    ) !important;
+
+                    max-width: 100% !important;
+
+                    flex: 0 1 clamp(
+                        400px,
+                        52vw,
+                        540px
+                    ) !important;
+
+                    box-sizing: border-box !important;
+                }
+            }
+
+
+            /* SearchBar 内部表单填满 SearchBar */
+            .css-x84wzl .SearchBar-tool {
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                box-sizing: border-box !important;
+            }
+
+
+            /* ---------- 回答页 QuestionHeader ---------- */
+
+            .QuestionHeader {
+                width: 100% !important;
+                max-width: none !important;
+                min-width: 0 !important;
+                box-sizing: border-box !important;
+
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+            }
+
+            .QuestionHeader-content {
+                width: 100% !important;
+                max-width: none !important;
+                min-width: 0 !important;
+                box-sizing: border-box !important;
+
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
+
+            /* ---------- 回答操作栏 ---------- */
+
+            .ContentItem-actions > :nth-child(2) {
+                margin-left: 0 !important;
+            }
+
+            /*
+             * 修正操作栏左右负边距。
+             * 原来 -20px，改为 -16px。
+             */
+            .ContentItem-actions {
+                margin-left: -16px !important;
+                margin-right: -16px !important;
+            }
+
+
+        `,
+        tieba: `
+            /* =========================
+               百度贴吧
+               ========================= */
+
+            /*
+             * 首页内容容器。
+             * 默认左右各有 60px 内边距，会让中心栏无法利用完整主区域。
+             */
+            .home-page-wrapper > .container {
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+                box-sizing: border-box !important;
+            }
+
+            /* 首页主体：占满可用宽度，并保留右侧栏出现时的 flex 空间分配。 */
+            .home-page-wrapper .center-content {
+                width: 100% !important;
+                max-width: none !important;
+                min-width: 0 !important;
+
+                flex: 1 1 0% !important;
+
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+
+                box-sizing: border-box !important;
+            }
+
+            /*
+             * 主页和帖子详情页共用的主体布局修正。
+             *
+             * 折叠侧栏仍参与 flex 排版，占据 261px；主体通过
+             * -261px 左外边距抵消占位，并以 100% 宽度铺满视口。
+             * 同时将侧栏完全移出视口，避免其 z-index 覆盖主体
+             * 左侧内容（原 left:-244px 会残留约 17px）。
+             */
+            .pc-main-page-layout .content-container:has(> .left-content.is-collapsed) {
+                justify-content: flex-start !important;
+            }
+
+            .pc-main-page-layout .content-container:has(> .left-content.is-collapsed) > .left-content.is-collapsed {
+                flex: 0 0 261px !important;
+                width: 261px !important;
+                left: -261px !important;
+                box-sizing: border-box !important;
+            }
+
+            .pc-main-page-layout .content-container:has(> .left-content.is-collapsed) > .main-content.is-expanded {
+                flex: 0 0 100% !important;
+                width: 100% !important;
+                margin-left: -261px !important;
+                box-sizing: border-box !important;
+            }
+
+            /*
+             * 帖子详情页外层容器。
+             *
+             * Tieba 默认 .container 有 1060px 的最大宽度，
+             * 并带有左右自动外边距及额外内边距。
+             * 这些限制会让 center-content 无法随外层主区域展开。
+             */
+            .pc-pb-box .container {
+                width: 100% !important;
+                max-width: none !important;
+                min-width: 0 !important;
+
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+
+                box-sizing: border-box !important;
+            }
+
+            /*
+             * 贴吧吧页禁止横向滚动。
+             * .frs-page-wrap 是吧页的页面滚动容器，保留纵向滚动。
+             */
+            .frs-page-wrap {
+                overflow-x: hidden !important;
+            }
+
+            .frs-page-wrap .frs-container {
+                overflow-x: hidden !important;
+            }
+
+            /*
+             * 贴吧吧页全宽布局。
+             *
+             * .frs-container 默认 max-width:1059px 且左右各有 60px padding，
+             * 导致整个吧页内容被限制在中间。这里解除宽度和内边距限制，
+             * 并让顶部头图区、下方主内容区同步铺满。
+             */
+
+            .frs-page-wrap .frs-container.frs-page-container {
+                width: 100% !important;
+                max-width: none !important;
+                min-width: 0 !important;
+
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+
+                box-sizing: border-box !important;
+            }
+
+            .frs-page-wrap .frs-container .head-pic-area {
+                width: 100% !important;
+                max-width: none !important;
+                min-width: 0 !important;
+                box-sizing: border-box !important;
+            }
+
+            .frs-page-wrap .frs-container .frs-main-container {
+                width: 100% !important;
+                max-width: none !important;
+                min-width: 0 !important;
+                box-sizing: border-box !important;
+            }
+
+            /* 隐藏吧页右侧栏，让左侧帖子列表自然占满下方区域。 */
+            .frs-page-wrap .frs-container .frs-main-container .frs-right-sidebar {
+                display: none !important;
+            }
+
+            .frs-page-wrap .frs-container .frs-main-container .left-container {
+                min-width: 0 !important;
+                max-width: none !important;
+                box-sizing: border-box !important;
+            }
+
+            /*
+             * 帖子详情页禁止横向滚动。
+             * .pc-pb-box 是实际发生 11px 内部溢出的滚动容器；
+             * 只关闭横向溢出，保留原有纵向滚动。
+             */
+            .pc-pb-box {
+                overflow-x: hidden !important;
+            }
+
+            /* 正文左右留出与主页相近的呼吸空间，避免文字和图片贴边。 */
+            .pc-pb-box .center-content {
+                padding-left: 12px !important;
+                padding-right: 12px !important;
+                box-sizing: border-box !important;
+            }
+
+            /*
+             * 帖子详情页正文主栏。
+             * 移除原有 47px 右边距，填满 .container 的可用宽度。
+             */
+            .pc-pb-box .center-content {
+                width: 100% !important;
+                max-width: none !important;
+                min-width: 0 !important;
+
+                flex: 1 1 0% !important;
+
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+
+                box-sizing: border-box !important;
+            }
+        `,
+        bilibili: currentHostname === 't.bilibili.com'
+            ? `
+                /* =========================
+                   哔哩哔哩动态页
+                   ========================= */
+
+                /* 主内容区铺满父容器；同时解除 flex/grid 的列宽限制 */
+                main {
+                    width: 100% !important;
+                    max-width: none !important;
+                    min-width: 0 !important;
+                    flex: 1 1 100% !important;
+                    grid-column: 1 / -1 !important;
+                    margin-left: 0 !important;
+                    margin-right: 0 !important;
+                    box-sizing: border-box !important;
+                }
+            `
+            : ''
+    };
+
+    const SITE_STYLE_RULES = {
+        zhihu: [
+            {
+                description: '详情页问题栏宽度与左侧对齐',
+                selectors: ['.QuestionHeader-main'],
+                declarations: {
+                    width: 'auto',
+                    'padding-left': '0'
+                }
+            },
+            {
+                description: '知乎顶栏及悬浮顶栏靠左',
+                selectors: ['.css-14iuq0r'],
+                // max-width 不接受 auto；none 才表示取消最大宽度限制。
+                declarations: { 'max-width': 'none' }
+            },
+            {
+                selectors: ['.css-lgijre'],
+                declarations: { padding: '0' }
+            },
+            {
+                description: '隐藏知乎顶栏 Logo/名称区域',
+                selectors: ['[aria-label="知乎"]'],
+                declarations: { display: 'none' }
+            },
+            {
+                description: '搜索框靠顶栏最右侧',
+                selectors: ['.css-x84wzl'],
+                declarations: { 'justify-content': 'flex-end' }
+            }
+        ],
+        tieba: [
+            {
+                description: '贴吧顶栏搜索区靠左并去除顶栏内边距',
+                selectors: ['.search-mid'],
+                declarations: { margin: '0' }
+            },
+            {
+                selectors: ['#top-bar'],
+                declarations: { padding: '0' }
+            }
+        ]
+    };
+
+    const buildStyleRules = rules => rules.map(rule => {
+        const description = rule.description
+            ? `/* ${rule.description} */\n`
+            : '';
+        const selectors = rule.selectors.join(',\n');
+        const declarations = Object.entries(rule.declarations)
+            .map(([property, value]) => `    ${property}: ${value} !important;`)
+            .join('\n');
+
+        return `${description}${selectors} {\n${declarations}\n}`;
+    }).join('\n\n');
+
+
+    /*
+     * 从 block.txt 迁移并持续维护的屏蔽规则。
+     * enabled: false 表示仅保留记录，不会生成实际屏蔽 CSS。
+     * 屏蔽规则与布局样式分开管理；实际注入仍受当前站点总开关控制。
      */
     const BLOCK_RULES = [
         {
@@ -78,7 +589,13 @@
                 '.c1',
                 '.cell',
                 '#toptopics',
-                '#fast_post_c'
+                '#fast_post_c',
+                '#footer',
+                '#b_nav',
+                '#m_nav',
+                '#m_pbtntop',
+                '#mainmenu',
+                '#custombg'
             ]
         },
         {
@@ -109,6 +626,10 @@
                 '.FollowButton',
                 '.Reward',
                 '.ContentItem-actions > :first-child',
+                '.css-a3pqj1',
+                '.ContentItem-time',
+                '.css-dvccr2',
+                '.css-kt4t4n',
                 '[aria-label="喜欢"]',
                 '[data-tooltip="解释这篇内容"]',
                 '.css-upmq18',
@@ -146,8 +667,19 @@
             ]
         },
         {
+            // 仅记录，不应用：X 左栏与右栏。
+            domains: ['x.com'],
+            enabled: false,
+            selectors: [
+                'header',
+                '[data-testid="sidebarColumn"]'
+            ]
+        },
+        {
             domains: ['x.com'],
             selectors: [
+                '[data-testid="inline_reply_offscreen"]',
+                '.r-rull8r',
                 '[aria-label="主页时间线"] > .r-184en5c',
                 'article .r-kzbkwu > :last-child'
             ]
@@ -157,7 +689,9 @@
             selectors: [
                 '.VAQA49VP',
                 '.Ctt1baq8',
-                '.comment-input-container'
+                '.comment-input-container',
+                '.semiTabrelated_card',
+                '.semiTabai_card'
             ]
         }
     ];
@@ -239,7 +773,7 @@
 
     const activeBlockSelectors = isCurrentSiteEnabled
         ? BLOCK_RULES
-            .filter(rule => rule.domains.some(domain =>
+            .filter(rule => rule.enabled !== false && rule.domains.some(domain =>
                 isDomainMatch(currentHostname, domain)
             ))
             .flatMap(rule => rule.selectors)
@@ -565,459 +1099,11 @@
     // 当前网站总开关关闭时，不注入任何页面美化样式。
     if (!isCurrentSiteEnabled) return;
 
-    if (currentSite.id === 'zhihu') {
-
-        style.textContent = `
-            /* =========================
-               知乎
-               ========================= */
-
-            /* ---------- 问题页主栏 ---------- */
-
-            /*
-             * 问题页主容器。
-             * 取消左右留白和列间距。
-             */
-            .Question-main {
-                width: 100% !important;
-                max-width: none !important;
-                min-width: 0 !important;
-
-                margin-left: 0 !important;
-                margin-right: 0 !important;
-
-                padding-left: 0 !important;
-                padding-right: 0 !important;
-
-                gap: 0 !important;
-                column-gap: 0 !important;
-
-                box-sizing: border-box !important;
-            }
-
-            /*
-             * 问题页主栏。
-             * 占满父容器剩余空间。
-             */
-            .Question-mainColumn {
-                width: 100% !important;
-                max-width: none !important;
-                min-width: 0 !important;
-
-                flex: 1 1 0% !important;
-
-                margin-left: 0 !important;
-                margin-right: 0 !important;
-
-                padding-left: 0 !important;
-                padding-right: 0 !important;
-
-                box-sizing: border-box !important;
-            }
-
-            /*
-             * 知乎问题页内部布局容器。
-             */
-            .css-1gl8cva {
-                width: 100% !important;
-                max-width: none !important;
-                min-width: 0 !important;
-
-                margin-left: 0 !important;
-                margin-right: 0 !important;
-
-                padding-left: 0 !important;
-                padding-right: 0 !important;
-
-                box-sizing: border-box !important;
-            }
-
-
-            /* ---------- 首页主栏 ---------- */
-
-            .Topstory-container {
-                width: 100% !important;
-                max-width: none !important;
-                min-width: 0 !important;
-                box-sizing: border-box !important;
-
-                padding-left: 0 !important;
-                padding-right: 0 !important;
-            }
-
-            .Topstory-mainColumn {
-                width: 100% !important;
-                max-width: none !important;
-                min-width: 0 !important;
-
-                flex: 1 1 0% !important;
-
-                margin-right: 0 !important;
-            }
-
-            .Topstory-mainColumnCard,
-            .Topstory-content,
-            .Topstory-recommend {
-                width: 100% !important;
-                max-width: none !important;
-                min-width: 0 !important;
-                box-sizing: border-box !important;
-            }
-
-
-            /* ---------- 顶栏 ---------- */
-
-            /*
-             * 顶栏 fixed 父容器。
-             *
-             * 根据 body 实际宽度动态设置，
-             * 避免 100vw 包含滚动条区域导致溢出。
-             */
-            div:has(> header.AppHeader) {
-                width: var(--beautify-content-width) !important;
-                max-width: none !important;
-                box-sizing: border-box !important;
-            }
-
-
-            /*
-             * 顶栏本体。
-             * 与主栏保持对齐。
-             */
-            header.AppHeader {
-                width: 100% !important;
-                max-width: none !important;
-                min-width: 0 !important;
-
-                margin-left: 0 !important;
-                margin-right: 0 !important;
-
-                box-sizing: border-box !important;
-            }
-
-
-            /* 顶栏第一层内部容器 */
-            header.AppHeader > div {
-                width: 100% !important;
-                max-width: 100% !important;
-                min-width: 0 !important;
-                box-sizing: border-box !important;
-            }
-
-
-            /*
-             * 顶栏中间区域：
-             * 左边 Logo
-             * 中间 导航 + 搜索
-             * 右边 头像
-             */
-            header.AppHeader > div > .css-51utkw {
-                flex: 1 1 0% !important;
-                width: auto !important;
-                max-width: none !important;
-                min-width: 0 !important;
-                box-sizing: border-box !important;
-            }
-
-
-            /* 中间区域内部内容容器 */
-            header.AppHeader > div > .css-51utkw > .css-51utkw {
-                flex: 1 1 auto !important;
-                width: auto !important;
-                max-width: none !important;
-                min-width: 0 !important;
-                box-sizing: border-box !important;
-            }
-
-
-            /* 原来的占位层 */
-            header.AppHeader .css-1ndlr1n {
-                max-width: 100% !important;
-                min-width: 0 !important;
-                box-sizing: border-box !important;
-            }
-
-
-            /*
-             * 搜索区域。
-             * 占据导航与头像之间的剩余空间。
-             */
-            .css-x84wzl {
-                min-width: 0 !important;
-                max-width: 100% !important;
-                flex: 1 1 0% !important;
-                justify-content: center !important;
-                box-sizing: border-box !important;
-            }
-
-
-            /*
-             * 搜索框响应式宽度：
-             * 最小 400px
-             * 最大 540px
-             */
-            @media (min-width: 800px) {
-
-                .css-x84wzl .SearchBar {
-                    width: clamp(
-                        400px,
-                        52vw,
-                        540px
-                    ) !important;
-
-                    max-width: 100% !important;
-
-                    flex: 0 1 clamp(
-                        400px,
-                        52vw,
-                        540px
-                    ) !important;
-
-                    box-sizing: border-box !important;
-                }
-            }
-
-
-            /* SearchBar 内部表单填满 SearchBar */
-            .css-x84wzl .SearchBar-tool {
-                width: 100% !important;
-                max-width: 100% !important;
-                min-width: 0 !important;
-                box-sizing: border-box !important;
-            }
-
-
-            /* ---------- 回答页 QuestionHeader ---------- */
-
-            .QuestionHeader {
-                width: 100% !important;
-                max-width: none !important;
-                min-width: 0 !important;
-                box-sizing: border-box !important;
-
-                margin-left: 0 !important;
-                margin-right: 0 !important;
-            }
-
-            .QuestionHeader-content {
-                width: 100% !important;
-                max-width: none !important;
-                min-width: 0 !important;
-                box-sizing: border-box !important;
-
-                padding-left: 0 !important;
-                padding-right: 0 !important;
-            }
-
-            /* ---------- 回答操作栏 ---------- */
-
-            .ContentItem-actions > :nth-child(2) {
-                margin-left: 0 !important;
-            }
-
-            /*
-             * 修正操作栏左右负边距。
-             * 原来 -20px，改为 -16px。
-             */
-            .ContentItem-actions {
-                margin-left: -16px !important;
-                margin-right: -16px !important;
-            }
-
-
-        `;
-
-    } else if (currentSite.id === 'tieba') {
-
-        style.textContent = `
-            /* =========================
-               百度贴吧
-               ========================= */
-
-            /*
-             * 首页内容容器。
-             * 默认左右各有 60px 内边距，会让中心栏无法利用完整主区域。
-             */
-            .home-page-wrapper > .container {
-                padding-left: 0 !important;
-                padding-right: 0 !important;
-                box-sizing: border-box !important;
-            }
-
-            /* 首页主体：占满可用宽度，并保留右侧栏出现时的 flex 空间分配。 */
-            .home-page-wrapper .center-content {
-                width: 100% !important;
-                max-width: none !important;
-                min-width: 0 !important;
-
-                flex: 1 1 0% !important;
-
-                margin-left: 0 !important;
-                margin-right: 0 !important;
-
-                box-sizing: border-box !important;
-            }
-
-            /*
-             * 主页和帖子详情页共用的主体布局修正。
-             *
-             * 折叠侧栏仍参与 flex 排版，占据 261px；主体通过
-             * -261px 左外边距抵消占位，并以 100% 宽度铺满视口。
-             * 同时将侧栏完全移出视口，避免其 z-index 覆盖主体
-             * 左侧内容（原 left:-244px 会残留约 17px）。
-             */
-            .pc-main-page-layout .content-container:has(> .left-content.is-collapsed) {
-                justify-content: flex-start !important;
-            }
-
-            .pc-main-page-layout .content-container:has(> .left-content.is-collapsed) > .left-content.is-collapsed {
-                flex: 0 0 261px !important;
-                width: 261px !important;
-                left: -261px !important;
-                box-sizing: border-box !important;
-            }
-
-            .pc-main-page-layout .content-container:has(> .left-content.is-collapsed) > .main-content.is-expanded {
-                flex: 0 0 100% !important;
-                width: 100% !important;
-                margin-left: -261px !important;
-                box-sizing: border-box !important;
-            }
-
-            /*
-             * 帖子详情页外层容器。
-             *
-             * Tieba 默认 .container 有 1060px 的最大宽度，
-             * 并带有左右自动外边距及额外内边距。
-             * 这些限制会让 center-content 无法随外层主区域展开。
-             */
-            .pc-pb-box .container {
-                width: 100% !important;
-                max-width: none !important;
-                min-width: 0 !important;
-
-                margin-left: 0 !important;
-                margin-right: 0 !important;
-
-                padding-left: 0 !important;
-                padding-right: 0 !important;
-
-                box-sizing: border-box !important;
-            }
-
-            /*
-             * 贴吧吧页禁止横向滚动。
-             * .frs-page-wrap 是吧页的页面滚动容器，保留纵向滚动。
-             */
-            .frs-page-wrap {
-                overflow-x: hidden !important;
-            }
-
-            .frs-page-wrap .frs-container {
-                overflow-x: hidden !important;
-            }
-
-            /*
-             * 贴吧吧页全宽布局。
-             *
-             * .frs-container 默认 max-width:1059px 且左右各有 60px padding，
-             * 导致整个吧页内容被限制在中间。这里解除宽度和内边距限制，
-             * 并让顶部头图区、下方主内容区同步铺满。
-             */
-
-            .frs-page-wrap .frs-container.frs-page-container {
-                width: 100% !important;
-                max-width: none !important;
-                min-width: 0 !important;
-
-                margin-left: 0 !important;
-                margin-right: 0 !important;
-
-                padding-left: 0 !important;
-                padding-right: 0 !important;
-
-                box-sizing: border-box !important;
-            }
-
-            .frs-page-wrap .frs-container .head-pic-area {
-                width: 100% !important;
-                max-width: none !important;
-                min-width: 0 !important;
-                box-sizing: border-box !important;
-            }
-
-            .frs-page-wrap .frs-container .frs-main-container {
-                width: 100% !important;
-                max-width: none !important;
-                min-width: 0 !important;
-                box-sizing: border-box !important;
-            }
-
-            /* 隐藏吧页右侧栏，让左侧帖子列表自然占满下方区域。 */
-            .frs-page-wrap .frs-container .frs-main-container .frs-right-sidebar {
-                display: none !important;
-            }
-
-            .frs-page-wrap .frs-container .frs-main-container .left-container {
-                min-width: 0 !important;
-                max-width: none !important;
-                box-sizing: border-box !important;
-            }
-
-            /*
-             * 帖子详情页禁止横向滚动。
-             * .pc-pb-box 是实际发生 11px 内部溢出的滚动容器；
-             * 只关闭横向溢出，保留原有纵向滚动。
-             */
-            .pc-pb-box {
-                overflow-x: hidden !important;
-            }
-
-            /* 正文左右留出与主页相近的呼吸空间，避免文字和图片贴边。 */
-            .pc-pb-box .center-content {
-                padding-left: 12px !important;
-                padding-right: 12px !important;
-                box-sizing: border-box !important;
-            }
-
-            /*
-             * 帖子详情页正文主栏。
-             * 移除原有 47px 右边距，填满 .container 的可用宽度。
-             */
-            .pc-pb-box .center-content {
-                width: 100% !important;
-                max-width: none !important;
-                min-width: 0 !important;
-
-                flex: 1 1 0% !important;
-
-                margin-left: 0 !important;
-                margin-right: 0 !important;
-
-                box-sizing: border-box !important;
-            }
-        `;
-    } else if (currentSite.id === 'bilibili') {
-
-        if (currentHostname === 't.bilibili.com') {
-            style.textContent = `
-                /* =========================
-                   哔哩哔哩动态页
-                   ========================= */
-
-                /* 主内容区铺满父容器；同时解除 flex/grid 的列宽限制 */
-                main {
-                    width: 100% !important;
-                    max-width: none !important;
-                    min-width: 0 !important;
-                    flex: 1 1 100% !important;
-                    grid-column: 1 / -1 !important;
-                    margin-left: 0 !important;
-                    margin-right: 0 !important;
-                    box-sizing: border-box !important;
-                }
-            `;
-        }
+    style.textContent = SITE_STYLES[currentSite.id] || '';
+
+    const additionalStyleRules = SITE_STYLE_RULES[currentSite.id] || [];
+    if (additionalStyleRules.length > 0) {
+        style.textContent += '\n\n' + buildStyleRules(additionalStyleRules);
     }
 
 

@@ -514,18 +514,17 @@
                 declarations: { 'justify-content': 'flex-end' }
             },
             {
-                description: '非搜索页操作栏子项间距（兼容两种 DOM）',
+                description: '非搜索页操作栏子项间距',
                 excludePaths: ['/search'],
                 selectors: [
-                    '.ContentItem-actions > :nth-child(2)',
-                    '.css-1qqx3d0 > :nth-child(2)'
+                    '.ContentItem-actions > :nth-child(2)'
                 ],
                 declarations: { 'margin-left': '0' }
             },
             {
-                description: '非搜索页操作栏左右边距（兼容两种 DOM）',
+                description: '非搜索页操作栏左右边距',
                 excludePaths: ['/search'],
-                selectors: ['.ContentItem-actions', '.css-1qqx3d0'],
+                selectors: ['.ContentItem-actions'],
                 declarations: {
                     'margin-left': '-16px',
                     'margin-right': '-16px'
@@ -669,12 +668,11 @@
             ]
         },
         {
-            // 非搜索页同时兼容回答页与新版 DOM；搜索页不注入旧选择器。
+            // 非搜索页只使用原操作栏选择器。
             domains: ['www.zhihu.com'],
             excludePaths: ['/search'],
             selectors: [
-                '.ContentItem-actions > :first-child',
-                '.css-1qqx3d0 > :first-child'
+                '.ContentItem-actions > :first-child'
             ]
         },
         {

@@ -492,8 +492,7 @@
                 description: '详情页问题栏宽度与左侧对齐',
                 selectors: ['.QuestionHeader-main'],
                 declarations: {
-                    width: 'auto',
-                    'padding-left': '0'
+                    width: 'auto'
                 }
             },
             {
@@ -501,10 +500,6 @@
                 selectors: ['.css-14iuq0r'],
                 // max-width 不接受 auto；none 才表示取消最大宽度限制。
                 declarations: { 'max-width': 'none' }
-            },
-            {
-                selectors: ['.css-lgijre'],
-                declarations: { padding: '0' }
             },
             {
                 description: '隐藏知乎顶栏 Logo/名称区域',
@@ -515,6 +510,14 @@
                 description: '搜索框靠顶栏最右侧',
                 selectors: ['.css-x84wzl'],
                 declarations: { 'justify-content': 'flex-end' }
+            },
+            {
+                description: '知乎搜索页操作栏左右对齐',
+                selectors: ['.css-1qqx3d0'],
+                declarations: {
+                    'margin-left': '-16px',
+                    'margin-right': '-16px'
+                }
             }
         ],
         tieba: [
@@ -626,6 +629,7 @@
                 '.FollowButton',
                 '.Reward',
                 '.ContentItem-actions > :first-child',
+                '.css-1qqx3d0',
                 '.css-a3pqj1',
                 '.ContentItem-time',
                 '.css-dvccr2',

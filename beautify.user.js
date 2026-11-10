@@ -494,7 +494,7 @@
                 description: '详情页问题栏宽度与左侧对齐',
                 selectors: ['.QuestionHeader-main'],
                 declarations: {
-                    width: 'auto'
+                    width: '100%'
                 }
             },
             {
@@ -528,6 +528,45 @@
                 declarations: {
                     'margin-left': '-16px',
                     'margin-right': '-16px'
+                }
+            },
+            {
+                description: '搜索页主栏容器铺满宽度',
+                onlyPaths: ['/search'],
+                selectors: ['.Search-container'],
+                declarations: {
+                    padding: '0',
+                    width: '100%'
+                }
+            },
+            {
+                description: '搜索页主内容区域铺满宽度',
+                onlyPaths: ['/search'],
+                selectors: ['#SearchMain'],
+                declarations: {
+                    'margin-right': '0',
+                    width: '100%'
+                }
+            },
+            {
+                description: '搜索页顶栏容器占满宽度并取消居中外边距',
+                onlyPaths: ['/search'],
+                selectors: ['.SearchTabs-inner'],
+                declarations: {
+                    display: 'flex',
+                    margin: '0',
+                    width: '100%',
+                    'max-width': 'none',
+                    'align-items': 'center'
+                }
+            },
+            {
+                description: '搜索页顶栏搜索框靠右',
+                onlyPaths: ['/search'],
+                selectors: ['.SearchTabs-searchBarContainer'],
+                declarations: {
+                    'margin-left': 'auto',
+                    'flex': '0 0 auto'
                 }
             },
             {
@@ -681,6 +720,15 @@
             onlyPaths: ['/search'],
             selectors: [
                 '.css-1qqx3d0 > :first-child'
+            ]
+        },
+        {
+            // 搜索页主栏与顶栏中不需要显示的元素。
+            domains: ['www.zhihu.com'],
+            onlyPaths: ['/search'],
+            selectors: [
+                '.css-1m4ta6s',
+                '.SearchTabs-profile'
             ]
         },
         {

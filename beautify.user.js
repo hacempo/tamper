@@ -32,6 +32,24 @@
     ];
 
     const currentHostname = location.hostname.toLowerCase();
+    const currentPathname = location.pathname;
+
+    const matchesPath = (pathname, paths = []) =>
+        paths.some(path =>
+            pathname === path || pathname.startsWith(path + '/')
+        );
+
+    const isRulePathMatch = rule => {
+        if (rule.onlyPaths && !matchesPath(currentPathname, rule.onlyPaths)) {
+            return false;
+        }
+
+        if (rule.excludePaths && matchesPath(currentPathname, rule.excludePaths)) {
+            return false;
+        }
+
+        return true;
+    };
 
     /*
      * 各站点的基础布局样式集中存放，避免把大段 CSS 和注入流程混在条件分支中。
@@ -280,22 +298,6 @@
                 padding-right: 0 !important;
             }
 
-            /* ---------- 回答操作栏 ---------- */
-
-            .ContentItem-actions > :nth-child(2) {
-                margin-left: 0 !important;
-            }
-
-            /*
-             * 修正操作栏左右负边距。
-             * 原来 -20px，改为 -16px。
-             */
-            .ContentItem-actions {
-                margin-left: -16px !important;
-                margin-right: -16px !important;
-            }
-
-
         `,
         tieba: `
             /* =========================
@@ -512,7 +514,32 @@
                 declarations: { 'justify-content': 'flex-end' }
             },
             {
-                description: '知乎搜索页操作栏左右对齐',
+                description: '非搜索页操作栏子项间距（兼容两种 DOM）',
+                excludePaths: ['/search'],
+                selectors: [
+                    '.ContentItem-actions > :nth-child(2)',
+                    '.css-1qqx3d0 > :nth-child(2)'
+                ],
+                declarations: { 'margin-left': '0' }
+            },
+            {
+                description: '非搜索页操作栏左右边距（兼容两种 DOM）',
+                excludePaths: ['/search'],
+                selectors: ['.ContentItem-actions', '.css-1qqx3d0'],
+                declarations: {
+                    'margin-left': '-16px',
+                    'margin-right': '-16px'
+                }
+            },
+            {
+                description: '搜索页操作栏子项间距',
+                onlyPaths: ['/search'],
+                selectors: ['.css-1qqx3d0 > :nth-child(2)'],
+                declarations: { 'margin-left': '0' }
+            },
+            {
+                description: '搜索页操作栏左右边距',
+                onlyPaths: ['/search'],
                 selectors: ['.css-1qqx3d0'],
                 declarations: {
                     'margin-left': '-16px',
@@ -628,8 +655,6 @@
                 '.QuestionHeader-footer',
                 '.FollowButton',
                 '.Reward',
-                '.ContentItem-actions > :first-child',
-                '.css-1qqx3d0',
                 '.css-a3pqj1',
                 '.ContentItem-time',
                 '.css-dvccr2',
@@ -641,6 +666,23 @@
                 '.css-140jo2',
                 '.WriteArea',
                 '.CornerButtonsGroup'
+            ]
+        },
+        {
+            // 非搜索页同时兼容回答页与新版 DOM；搜索页不注入旧选择器。
+            domains: ['www.zhihu.com'],
+            excludePaths: ['/search'],
+            selectors: [
+                '.ContentItem-actions > :first-child',
+                '.css-1qqx3d0 > :first-child'
+            ]
+        },
+        {
+            // 搜索页只使用新版 DOM 选择器，等价替换非搜索页规则。
+            domains: ['www.zhihu.com'],
+            onlyPaths: ['/search'],
+            selectors: [
+                '.css-1qqx3d0 > :first-child'
             ]
         },
         {
@@ -777,9 +819,11 @@
 
     const activeBlockSelectors = isCurrentSiteEnabled
         ? BLOCK_RULES
-            .filter(rule => rule.enabled !== false && rule.domains.some(domain =>
-                isDomainMatch(currentHostname, domain)
-            ))
+            .filter(rule =>
+                rule.enabled !== false &&
+                rule.domains.some(domain => isDomainMatch(currentHostname, domain)) &&
+                isRulePathMatch(rule)
+            )
             .flatMap(rule => rule.selectors)
         : [];
 
@@ -1105,7 +1149,8 @@
 
     style.textContent = SITE_STYLES[currentSite.id] || '';
 
-    const additionalStyleRules = SITE_STYLE_RULES[currentSite.id] || [];
+    const additionalStyleRules = (SITE_STYLE_RULES[currentSite.id] || [])
+        .filter(isRulePathMatch);
     if (additionalStyleRules.length > 0) {
         style.textContent += '\n\n' + buildStyleRules(additionalStyleRules);
     }

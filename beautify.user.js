@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         beautify
 // @namespace    http://tampermonkey.net/
-// @version      4.8
+// @version      4.9
 // @description  为指定网站调整页面布局
 // @match        *://*/*
 // @run-at       document-start
@@ -652,6 +652,13 @@
         {
             domains: ['ngabbs.com'],
             selectors: [
+                /*
+                 * 帖子列表每行的元信息条（回复数/发帖人/发帖时间/最后回复人/最后回复时间）。
+                 * 屏蔽后整行只剩标题，行高由 123px 降到 64px，一屏能看到约两倍的帖子。
+                 * .posterInfoLineB 是同一模板的另一种命名，一并屏蔽以免换版面时漏掉。
+                 */
+                '.posterInfoLine',
+                '.posterInfoLineB',
                 '.topicrow .c3',
                 '.topicrow .c4',
                 '.c1',

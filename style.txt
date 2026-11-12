@@ -1,0 +1,186 @@
+/*
+ * 百度贴吧【桌面端网页】样式规则（存档）。
+ * 已从 beautify.user.js 中移除；脚本现在只针对移动端网页。
+ * 如需恢复桌面端，把这里的 CSS 重新放回脚本的样式规则中即可。
+ */
+
+/* =========================
+   百度贴吧
+   ========================= */
+
+/*
+ * 首页内容容器。
+ * 默认左右各有 60px 内边距，会让中心栏无法利用完整主区域。
+ */
+.home-page-wrapper > .container {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    box-sizing: border-box !important;
+}
+
+/* 首页主体：占满可用宽度，并保留右侧栏出现时的 flex 空间分配。 */
+.home-page-wrapper .center-content {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+
+    flex: 1 1 0% !important;
+
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+
+    box-sizing: border-box !important;
+}
+
+/*
+ * 主页和帖子详情页共用的主体布局修正。
+ *
+ * 折叠侧栏仍参与 flex 排版，占据 261px；主体通过
+ * -261px 左外边距抵消占位，并以 100% 宽度铺满视口。
+ * 同时将侧栏完全移出视口，避免其 z-index 覆盖主体
+ * 左侧内容（原 left:-244px 会残留约 17px）。
+ */
+.pc-main-page-layout .content-container:has(> .left-content.is-collapsed) {
+    justify-content: flex-start !important;
+}
+
+.pc-main-page-layout .content-container:has(> .left-content.is-collapsed) > .left-content.is-collapsed {
+    flex: 0 0 261px !important;
+    width: 261px !important;
+    left: -261px !important;
+    box-sizing: border-box !important;
+}
+
+.pc-main-page-layout .content-container:has(> .left-content.is-collapsed) > .main-content.is-expanded {
+    flex: 0 0 100% !important;
+    width: 100% !important;
+    margin-left: -261px !important;
+    box-sizing: border-box !important;
+}
+
+/*
+ * 帖子详情页外层容器。
+ *
+ * Tieba 默认 .container 有 1060px 的最大宽度，
+ * 并带有左右自动外边距及额外内边距。
+ * 这些限制会让 center-content 无法随外层主区域展开。
+ */
+.pc-pb-box .container {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+
+    box-sizing: border-box !important;
+}
+
+/*
+ * 贴吧吧页禁止横向滚动。
+ * .frs-page-wrap 是吧页的页面滚动容器，保留纵向滚动。
+ */
+.frs-page-wrap {
+    overflow-x: hidden !important;
+}
+
+.frs-page-wrap .frs-container {
+    overflow-x: hidden !important;
+}
+
+/*
+ * 贴吧吧页全宽布局。
+ *
+ * .frs-container 默认 max-width:1059px 且左右各有 60px padding，
+ * 导致整个吧页内容被限制在中间。这里解除宽度和内边距限制，
+ * 并让顶部头图区、下方主内容区同步铺满。
+ */
+
+.frs-page-wrap .frs-container.frs-page-container {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+
+    box-sizing: border-box !important;
+}
+
+.frs-page-wrap .frs-container .head-pic-area {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+}
+
+.frs-page-wrap .frs-container .frs-main-container {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+}
+
+/* 隐藏吧页右侧栏，让左侧帖子列表自然占满下方区域。 */
+.frs-page-wrap .frs-container .frs-main-container .frs-right-sidebar {
+    display: none !important;
+}
+
+.frs-page-wrap .frs-container .frs-main-container .left-container {
+    min-width: 0 !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+}
+
+/*
+ * 帖子详情页禁止横向滚动。
+ * .pc-pb-box 是实际发生 11px 内部溢出的滚动容器；
+ * 只关闭横向溢出，保留原有纵向滚动。
+ */
+.pc-pb-box {
+    overflow-x: hidden !important;
+}
+
+/* 正文左右留出与主页相近的呼吸空间，避免文字和图片贴边。 */
+.pc-pb-box .center-content {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    box-sizing: border-box !important;
+}
+
+/*
+ * 帖子详情页正文主栏。
+ * 移除原有 47px 右边距，填满 .container 的可用宽度。
+ */
+.pc-pb-box .center-content {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+
+    flex: 1 1 0% !important;
+
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+
+    box-sizing: border-box !important;
+}
+
+
+/* =========================
+   原 SITE_STYLE_RULES.tieba（补充覆盖样式）
+   ========================= */
+
+/* 贴吧顶栏搜索区靠左并去除顶栏内边距 */
+.search-mid {
+    margin: 0 !important;
+}
+
+#top-bar {
+    padding: 0 !important;
+}

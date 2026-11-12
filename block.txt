@@ -1,0 +1,14 @@
+! 百度贴吧【桌面端网页】屏蔽规则（存档）。
+! 已从 beautify.user.js 中移除；脚本现在只针对移动端网页。
+! 格式：域名##选择器
+tieba.baidu.com##.home-left
+tieba.baidu.com##.right-menu
+tieba.baidu.com##.thread-action-area
+tieba.baidu.com##.pc-pb-first-floor-interactive
+tieba.baidu.com##.pc-pb-comments-desc
+tieba.baidu.com##.pc-pb-reply-box
+tieba.baidu.com##.right-nav-bar
+tieba.baidu.com##.frs-right-sidebar
+
+! 以下为原脚本注释中“暂不启用”的规则
+! tieba.baidu.com##.head-line
